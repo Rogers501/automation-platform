@@ -1,0 +1,23 @@
+# Development environment overrides.
+env: dev
+debug: true
+log_level: DEBUG
+http:
+  base_url: http://localhost:8080
+  log_bodies: true
+database:
+  type: postgresql
+  host: localhost
+  database: platform_dev
+  username: platform
+  # password supplied via APP_DATABASE__PASSWORD or .env (never hardcoded)
+redis:
+  host: localhost
+  db: 0
+  # password supplied via APP_REDIS__PASSWORD or .env (never hardcoded)
+mq:
+  type: kafka
+  kafka:
+    bootstrap_servers:
+      - localhost:9092
+    # sasl_password supplied via APP_MQ__KAFKA__SASL_PASSWORD or .env

@@ -1,0 +1,54 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+.venv-docx/
+.docx-build/
+
+# Caches
+.uv-cache/
+.pytest_cache/
+.pytest-basetemp/
+.pytest-tmp/
+.mypy_cache/
+.ruff_cache/
+.pre-commit-cache/
+
+# Test & coverage
+.coverage
+.coverage.*
+htmlcov/
+reports/
+logs/
+allure-results/
+allure-report/
+
+# Environment
+.env
+
+# Docker local volumes
+.docker-volumes/
+
+# Office temp / lock files
+~$*
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Playwright browser binaries (local install)
+.playwright-browsers/
+
+# Debug screenshots
+captcha_debug_*.png
+

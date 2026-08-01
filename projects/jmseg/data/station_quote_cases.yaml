@@ -1,0 +1,14 @@
+# 数据驱动用例:新增报价(save)参数化。
+# 字段名使用请求模型的 Python(snake_case)字段;工厂会补齐登录上下文。
+- name: pickup-fee
+  quote_name: 报价-取件费-用例
+  fee_type: 1
+  rounding_mode: B01
+- name: delivery-fee
+  quote_name: 报价-派件费-用例
+  fee_type: 2
+  rounding_mode: B02
+- name: warehouse-fee
+  quote_name: 报价-仓储费-用例
+  fee_type: 3
+  rounding_mode: B01

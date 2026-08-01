@@ -1,0 +1,12 @@
+# UAT environment.
+env: uat
+debug: false
+log_level: INFO
+http:
+  base_url: https://uat-api.example.com
+database:
+  type: postgresql
+  host: uat-db.example.com
+  database: oms_uat
+  username: oms
+  # password supplied via APP_DATABASE__PASSWORD or .env (never hardcoded)

@@ -1,0 +1,10 @@
+# Test environment for jmseu (German JMS system).
+env: test
+debug: false
+log_level: INFO
+web:
+  base_url: https://jmseu-jms.jnt-express.com.cn
+  browser: chromium
+  headless: true
+  timeout_ms: 30000
+  ignore_https_errors: true

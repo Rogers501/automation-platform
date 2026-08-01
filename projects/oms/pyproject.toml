@@ -1,0 +1,19 @@
+[project]
+name = "oms"
+version = "0.1.0"
+description = "Business system test project oms (copy to projects/<name>)"
+requires-python = ">=3.12"
+dependencies = [
+    "framework",
+]
+
+# To install this project as an editable uv workspace member, uncomment the
+# blocks below and add "projects/template" (or the copied path) to the root
+# [tool.uv.workspace] members.
+#
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+#
+# [tool.uv.sources]
+# framework = { workspace = true }

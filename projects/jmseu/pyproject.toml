@@ -1,0 +1,19 @@
+[project]
+name = "jmseu"
+version = "0.1.0"
+description = "jmseu 德国 JMS 系统 WebUI 自动化测试项目"
+requires-python = ">=3.12"
+dependencies = [
+    "framework",
+    "playwright>=1.40",
+]
+
+# Editable workspace member: uncomment and add "projects/jmseu" to the root
+# [tool.uv.workspace] members, plus:
+#
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+#
+# [tool.uv.sources]
+# framework = { workspace = true }

@@ -1,0 +1,19 @@
+[project]
+name = "jmseg"
+version = "0.1.0"
+description = "jmseg 驿站报价维护接口自动化测试项目"
+requires-python = ">=3.12"
+dependencies = [
+    "framework",
+    "faker>=24",
+]
+
+# Editable workspace member: uncomment and add "projects/jmseg" to the root
+# [tool.uv.workspace] members, plus:
+#
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+#
+# [tool.uv.sources]
+# framework = { workspace = true }

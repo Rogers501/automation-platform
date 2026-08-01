@@ -1,0 +1,7 @@
+# UAT environment.
+env: uat
+debug: false
+log_level: INFO
+http:
+  base_url: http://jmseg-uat.example.com
+  log_bodies: false

@@ -1,0 +1,7 @@
+# Production environment (read-only smoke only).
+env: prod
+debug: false
+log_level: WARNING
+http:
+  base_url: http://jmseg.example.com
+  log_bodies: false

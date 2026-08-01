@@ -1,0 +1,28 @@
+# Pre-commit hooks backed by the project's own tooling.
+# No external hook repos are cloned; hooks invoke `uv run ruff/mypy` from the
+# project environment, so versions stay consistent with the lockfile.
+# Requires `uv sync` first.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check .
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --check .
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: mypy
+        name: mypy (framework)
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]

@@ -1,0 +1,60 @@
+[project]
+name = "automation-platform"
+version = "0.1.0"
+description = "Enterprise Python automation testing platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "framework",
+]
+
+[tool.uv.workspace]
+members = ["framework"]
+
+[tool.uv.sources]
+framework = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=5",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "pre-commit>=3.8",
+    "aiosqlite>=0.20",
+    "fakeredis>=2.20",
+    "pytest-xdist>=3.5",
+]
+
+[tool.mypy]
+python_version = "3.12"
+# NOTE: pydantic.mypy plugin is incompatible with the installed mypy build (ExpandTypeVisitor missing); re-enable once versions align.
+strict = true
+warn_unused_ignores = true
+mypy_path = "framework/src"
+files = ["framework/src"]
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["aio_pika", "aio_pika.*", "appium", "appium.*", "redis", "redis.*", "aiokafka", "aiokafka.*", "rocketmq", "rocketmq.*", "playwright", "playwright.*", "selenium", "selenium.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "framework.clients.web.client"
+disable_error_code = ["no-any-return"]
+
+[[tool.mypy.overrides]]
+module = "framework.clients.cache.client"
+disable_error_code = ["no-any-return"]
+
+[[tool.mypy.overrides]]
+module = "jsonschema"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["allure", "allure.*"]
+ignore_missing_imports = true

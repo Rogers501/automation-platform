@@ -1,0 +1,11 @@
+# Development environment for jmseu (German JMS system).
+env: dev
+debug: true
+log_level: DEBUG
+web:
+  base_url: https://jmseu.test
+  browser: chromium
+  headless: true
+  timeout_ms: 30000
+  viewport_width: 1280
+  viewport_height: 720

@@ -1,0 +1,19 @@
+# Test environment overrides.
+env: test
+debug: false
+log_level: INFO
+http:
+  base_url: http://test-api.example.com
+database:
+  type: postgresql
+  host: test-db.example.com
+  database: platform_test
+  username: platform
+redis:
+  host: test-redis.example.com
+  db: 0
+mq:
+  type: kafka
+  kafka:
+    bootstrap_servers:
+      - test-kafka.example.com:9092

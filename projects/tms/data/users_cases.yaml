@@ -1,0 +1,6 @@
+- name: alice
+  email: alice@example.com
+- name: bob
+  email: bob@example.com
+- name: carol
+  email: carol@example.com

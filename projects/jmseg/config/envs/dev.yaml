@@ -1,0 +1,8 @@
+# Development environment.
+env: dev
+debug: true
+log_level: DEBUG
+http:
+  base_url: http://jmseg.test
+  log_bodies: true
+# jmseg token: supply via APP_JMSEG_TOKEN or .env (never hardcode).

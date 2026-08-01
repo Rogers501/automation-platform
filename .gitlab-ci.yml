@@ -1,0 +1,86 @@
+# GitLab CI pipeline for the automation testing platform.
+# Flow: commit -> install -> smoke -> regression -> allure report -> pages.
+# All commands route through scripts/ci/ci.sh (single source of truth, no duplication).
+#
+# Default image is python:3.12-slim (self-contained: ci.sh installs uv + allure).
+# For faster CI, build docker/Dockerfile.ci and set CI_IMAGE to the prebuilt image
+# (uv + JRE + allure CLI pre-baked, so install-allure is a no-op).
+
+stages:
+  - lint
+  - smoke
+  - regression
+  - report
+
+variables:
+  UV_VERSION: "0.11.14"
+  PIP_NO_CACHE_DIR: "1"
+  ALLURE_RESULTS: "allure-results"
+  ALLURE_REPORT: "public"
+  JUNIT: "reports/junit.xml"
+  CI_IMAGE: "python:3.12-slim"  # override to use a prebuilt image (e.g. registry/automation-platform:ci)
+
+.base:
+  image: $CI_IMAGE
+  before_script:
+    - sh scripts/ci/ci.sh install
+  cache:
+    key:
+      files:
+        - uv.lock
+      prefix: uv-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .uv-cache/
+      - .venv/
+
+lint:
+  extends: .base
+  stage: lint
+  script:
+    - sh scripts/ci/ci.sh lint
+
+smoke:
+  extends: .base
+  stage: smoke
+  script:
+    - sh scripts/ci/ci.sh smoke
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    reports:
+      junit: reports/junit.xml
+
+regression:
+  extends: .base
+  stage: regression
+  needs:
+    - smoke
+  script:
+    - sh scripts/ci/ci.sh regression
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+    reports:
+      junit: reports/junit.xml
+
+# Publish the Allure HTML report to GitLab Pages (on main + tags).
+# allure-results from smoke + regression are merged via the artifact chain.
+pages:
+  extends: .base
+  stage: report
+  needs:
+    - smoke
+    - regression
+  before_script:
+    - sh scripts/ci/ci.sh install
+    - sh scripts/ci/ci.sh install-allure
+  script:
+    - sh scripts/ci/ci.sh report
+  artifacts:
+    paths:
+      - public/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG

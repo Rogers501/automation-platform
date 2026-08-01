@@ -1,0 +1,19 @@
+# UAT environment overrides.
+env: uat
+debug: false
+log_level: INFO
+http:
+  base_url: http://uat-api.example.com
+database:
+  type: postgresql
+  host: uat-db.example.com
+  database: platform_uat
+  username: platform
+redis:
+  host: uat-redis.example.com
+  db: 0
+mq:
+  type: kafka
+  kafka:
+    bootstrap_servers:
+      - uat-kafka.example.com:9092

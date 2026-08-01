@@ -1,0 +1,9 @@
+# jmseu 登录测试数据.
+# 密码等敏感信息应通过环境变量注入 (rule 10); 此处仅 demo 值.
+# 真实test环境凭据见 .env (JMSEU_TEST_USERNAME / JMSEU_TEST_PASSWORD).
+cases:
+  - id: normal_admin
+    description: 管理员正常登录 (正常场景, CI假页面)
+    username: admin
+    password: Admin@123
+    expected_welcome_contains: admin

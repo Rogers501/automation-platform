@@ -1,0 +1,1771 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "驿站报价维护"
+    }
+  ],
+  "paths": {
+    "/station-quote/save": {
+      "post": {
+        "summary": "新增驿站报价",
+        "deprecated": false,
+        "description": "新增一条驿站报价记录，包含基础信息、绑定分组及重量区间公式。新增后默认未审核状态。\n\n\n***response code***:200\n\n新增成功\n\n\n\n\n***response code***:500\n\n业务异常或参数校验失败",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "0566ada121a5412c9c271ba153b22e64",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStationQuoteCmdRequest",
+                "description": "报价信息"
+              },
+              "example": {
+                "quoteName": "aa",
+                "feeType": 1,
+                "roundingMode": "B01",
+                "effectiveStartTime": "2026-06-22 00:00:00",
+                "effectiveEndTime": "2026-06-22 23:59:59",
+                "outboundType": 1,
+                "abnormalOutboundDays": null,
+                "groupIds": [
+                  "2063896631213273089",
+                  "2063881434624929793"
+                ],
+                "formulas": [
+                  {
+                    "startWeight": 0,
+                    "endWeight": 2,
+                    "priceFormula": "2",
+                    "price": null
+                  }
+                ],
+                "countryId": "1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultVoid"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/update": {
+      "post": {
+        "summary": "修改驿站报价",
+        "deprecated": false,
+        "description": "根据报价ID修改驿站报价。仅未审核的数据允许修改，已审核需先反审核。\n\n\n***response code***:200\n\n修改成功\n\n\n\n\n***response code***:500\n\n业务异常或参数校验失败",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStationQuoteCmdRequest",
+                "description": "报价信息"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultVoid"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/delete": {
+      "post": {
+        "summary": "删除驿站报价",
+        "deprecated": false,
+        "description": "根据报价ID删除驿站报价（逻辑删除）。仅未审核的数据允许删除。\n\n\n***response code***:200\n\n删除成功\n\n\n\n\n***response code***:500\n\n业务异常或参数校验失败",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteStationQuoteCmdRequest",
+                "description": "报价ID"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultVoid"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/audit": {
+      "post": {
+        "summary": "审核驿站报价",
+        "deprecated": false,
+        "description": "批量审核驿站报价。服务只处理未审核数据，已审核数据会被自动过滤。\n\n\n***response code***:200\n\n审核成功\n\n\n\n\n***response code***:500\n\n业务异常或参数校验失败",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditStationQuoteCmdRequest",
+                "description": "报价ID列表"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultVoid"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/unaudit": {
+      "post": {
+        "summary": "反审核驿站报价",
+        "deprecated": false,
+        "description": "批量反审核驿站报价。服务只处理已审核数据，未审核数据会被自动过滤。\n\n\n***response code***:200\n\n反审核成功\n\n\n\n\n***response code***:500\n\n业务异常或参数校验失败",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnauditStationQuoteCmdRequest",
+                "description": "报价ID列表"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultVoid"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/page": {
+      "post": {
+        "summary": "分页查询驿站报价",
+        "deprecated": false,
+        "description": "按报价名称、分组、驿站关键字、费用类型、审核状态、生效时间等条件分页查询驿站报价。\n\n\n***response code***:200\n\n查询成功\n\n\n```json\n{\n  \"id\": 0,\n  \"quoteName\": \"\",\n  \"feeType\": 0,\n  \"roundingMode\": 0,\n  \"groupNames\": \"\",\n  \"networkId\": 0,\n  \"networkCode\": \"\",\n  \"networkName\": \"\",\n  \"effectiveStartTime\": \"\",\n  \"effectiveEndTime\": \"\",\n  \"outboundType\": 0,\n  \"abnormalOutboundDays\": 0,\n  \"auditStatus\": 0,\n  \"auditBy\": 0,\n  \"auditByName\": \"\",\n  \"auditNetworkId\": 0,\n  \"auditNetworkName\": \"\",\n  \"auditTime\": \"\",\n  \"createBy\": 0,\n  \"createByName\": \"\",\n  \"createTime\": \"\",\n  \"updateBy\": 0,\n  \"updateByName\": \"\",\n  \"updateTime\": \"\"\n}\n```\n\n\n\n***response code***:500\n\n业务异常",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageStationQuoteQueryRequest",
+                "description": "查询条件"
+              },
+              "example": {
+                "quoteName": "aa",
+                "groupName": "gg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultPageStationQuotePageVO"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/ark-export/page": {
+      "post": {
+        "summary": "分页查询驿站报价Raw",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageStationQuoteQueryRequest",
+                "description": "查询条件"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultListStationQuotePageVO"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/station-quote/detail": {
+      "get": {
+        "summary": "查询驿站报价详情",
+        "deprecated": false,
+        "description": "根据报价ID查询驿站报价详情，含绑定分组列表与重量区间公式列表，可用于查看、编辑回显与复制回显。\n\n\n***response code***:200\n\n查询成功\n\n\n```json\n{\n  \"id\": 0,\n  \"quoteName\": \"\",\n  \"feeType\": 0,\n  \"roundingMode\": 0,\n  \"networkId\": 0,\n  \"networkCode\": \"\",\n  \"networkName\": \"\",\n  \"effectiveStartTime\": \"\",\n  \"effectiveEndTime\": \"\",\n  \"outboundType\": 0,\n  \"abnormalOutboundDays\": 0,\n  \"auditStatus\": 0,\n  \"auditBy\": 0,\n  \"auditByName\": \"\",\n  \"auditNetworkId\": 0,\n  \"auditNetworkName\": \"\",\n  \"auditTime\": \"\",\n  \"createBy\": 0,\n  \"createByName\": \"\",\n  \"createTime\": \"\",\n  \"updateBy\": 0,\n  \"updateByName\": \"\",\n  \"updateTime\": \"\",\n  \"groups\": [\n    {\n      \"groupId\": 0,\n      \"groupName\": \"\",\n      \"networkId\": 0,\n      \"networkCode\": \"\",\n      \"networkName\": \"\"\n    }\n  ],\n  \"formulas\": [\n    {\n      \"id\": 0,\n      \"startWeight\": 0.0,\n      \"endWeight\": 0.0,\n      \"priceFormula\": \"\",\n      \"price\": 0.0\n    }\n  ]\n}\n```\n\n\n\n***response code***:500\n\n业务异常或报价不存在",
+        "tags": [
+          "驿站报价维护"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "报价ID",
+            "required": true,
+            "example": 936964061533340200,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authtoken",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "d2289e70fcbc4bfeb5240d9e92dcf989",
+            "schema": {
+              "type": "string",
+              "default": "d2289e70fcbc4bfeb5240d9e92dcf989"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "zh_CN",
+            "schema": {
+              "type": "string",
+              "default": "zh_CN"
+            }
+          },
+          {
+            "name": "langtype",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "CN",
+            "schema": {
+              "type": "string",
+              "default": "CN"
+            }
+          },
+          {
+            "name": "X-UPS-USER",
+            "in": "header",
+            "description": "",
+            "example": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d",
+            "schema": {
+              "type": "string",
+              "default": "%7b%22countryCode%22%3a%22DE%22%2c%22countryDesc%22%3a%22DE%22%2c%22countryId%22%3a1%2c%22financialCenterId%22%3a22%2c%22franchisee%22%3afalse%2c%22franchiseeBit%22%3a0%2c%22id%22%3a362794%2c%22institutionalLevelDesc%22%3a%22%e4%bb%a3%e7%90%86%e5%8c%ba%22%2c%22institutionalLevelId%22%3a334%2c%22isDistributionCenter%22%3a2%2c%22isFinancialCenter%22%3a1%2c%22isFirstFranchisee%22%3a2%2c%22isSecondFranchisee%22%3a2%2c%22loginTime%22%3a%222026-06-15T08%3a27%3a12.345%22%2c%22name%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22networkCode%22%3a%22TEST01%22%2c%22networkId%22%3a1000077%2c%22networkName%22%3a%22GERMANY%22%2c%22staffNo%22%3a%22Y!%24U%231%23v4vrq4EsJkhfZEbrsyJmZw%3d%3d%3d%24%3d%22%2c%22userType%22%3a1%7d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultStationQuoteDetailVO"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StationQuoteFormulaCmdRequest": {
+        "type": "object",
+        "properties": {
+          "startWeight": {
+            "type": "number",
+            "description": ""
+          },
+          "endWeight": {
+            "type": "number",
+            "description": ""
+          },
+          "priceFormula": {
+            "type": "string",
+            "description": ""
+          },
+          "price": {
+            "type": "number",
+            "description": ""
+          }
+        },
+        "required": [
+          "startWeight",
+          "endWeight",
+          "priceFormula"
+        ]
+      },
+      "CreateStationQuoteCmdRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "",
+            "maxLength": 50
+          },
+          "feeType": {
+            "type": "integer",
+            "description": ""
+          },
+          "roundingMode": {
+            "type": "string",
+            "description": ""
+          },
+          "effectiveStartTime": {
+            "type": "string",
+            "description": ""
+          },
+          "effectiveEndTime": {
+            "type": "string",
+            "description": ""
+          },
+          "outboundType": {
+            "type": "integer",
+            "description": ""
+          },
+          "abnormalOutboundDays": {
+            "type": "integer",
+            "description": ""
+          },
+          "groupIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": ""
+          },
+          "formulas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationQuoteFormulaCmdRequest",
+              "description": "com.yl.spm.post.stationquote.application.command.StationQuoteFormulaCmdRequest"
+            },
+            "description": ""
+          }
+        },
+        "required": [
+          "quoteName",
+          "feeType",
+          "roundingMode",
+          "effectiveStartTime",
+          "effectiveEndTime"
+        ]
+      },
+      "UpdateStationQuoteCmdRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "",
+            "maxLength": 50
+          },
+          "feeType": {
+            "type": "integer",
+            "description": ""
+          },
+          "roundingMode": {
+            "type": "string",
+            "description": ""
+          },
+          "effectiveStartTime": {
+            "type": "string",
+            "description": ""
+          },
+          "effectiveEndTime": {
+            "type": "string",
+            "description": ""
+          },
+          "outboundType": {
+            "type": "integer",
+            "description": ""
+          },
+          "abnormalOutboundDays": {
+            "type": "integer",
+            "description": ""
+          },
+          "groupIds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": ""
+          },
+          "formulas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationQuoteFormulaCmdRequest",
+              "description": "com.yl.spm.post.stationquote.application.command.StationQuoteFormulaCmdRequest"
+            },
+            "description": ""
+          },
+          "id": {
+            "type": "integer",
+            "description": "",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "quoteName",
+          "feeType",
+          "roundingMode",
+          "effectiveStartTime",
+          "effectiveEndTime",
+          "id"
+        ]
+      },
+      "DeleteStationQuoteCmdRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "id": {
+            "type": "integer",
+            "description": "",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "AuditStationQuoteCmdRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "待审核报价ID列表。服务只处理未审核的数据，已审核数据会被过滤。"
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "UnauditStationQuoteCmdRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "待反审核报价ID列表。服务只处理已审核的数据，未审核数据会被过滤。"
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "StationQuotePageVO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "报价ID。\n报价ID",
+            "format": "int64"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "报价名称。\n报价名称"
+          },
+          "feeType": {
+            "type": "integer",
+            "description": "费用类型：1-取件费，2-派件费，3-仓储费。\n费用类型：1-取件费，2-派件费，3-仓储费"
+          },
+          "roundingMode": {
+            "type": "string",
+            "description": "计费重量进位方式，例如 B01-实际重量、B02-四舍五入。\n计费重量进位方式，例如 B01-实际重量、B02-四舍五入"
+          },
+          "groupNames": {
+            "type": "string",
+            "description": "报价绑定的驿站分组名称，多个分组用逗号拼接。\n报价绑定的驿站分组名称，多个分组用逗号拼接"
+          },
+          "networkId": {
+            "type": "integer",
+            "description": "报价所属网点ID。\n报价所属网点ID"
+          },
+          "networkCode": {
+            "type": "string",
+            "description": "报价所属网点编码。\n报价所属网点编码"
+          },
+          "networkName": {
+            "type": "string",
+            "description": "报价所属网点名称。\n报价所属网点名称"
+          },
+          "effectiveStartTime": {
+            "type": "string",
+            "description": "生效开始时间。\n生效开始时间"
+          },
+          "effectiveEndTime": {
+            "type": "string",
+            "description": "生效结束时间。\n生效结束时间"
+          },
+          "outboundType": {
+            "type": "integer",
+            "description": "寄件出库方式，仅取件费使用。\n寄件出库方式，仅取件费使用"
+          },
+          "abnormalOutboundDays": {
+            "type": "integer",
+            "description": "异常出库天数，仅仓储费使用。\n异常出库天数，仅仓储费使用"
+          },
+          "auditStatus": {
+            "type": "integer",
+            "description": "审核状态：0-未审核，1-已审核。\n审核状态：0-未审核，1-已审核"
+          },
+          "auditBy": {
+            "type": "integer",
+            "description": "审核人ID"
+          },
+          "auditByName": {
+            "type": "string",
+            "description": "审核人姓名"
+          },
+          "auditNetworkId": {
+            "type": "integer",
+            "description": "审核人所属网点ID"
+          },
+          "auditNetworkName": {
+            "type": "string",
+            "description": "审核人所属网点名称"
+          },
+          "auditTime": {
+            "type": "string",
+            "description": "审核时间"
+          },
+          "createBy": {
+            "type": "integer",
+            "description": "创建人ID"
+          },
+          "createByName": {
+            "type": "string",
+            "description": "创建人姓名"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间"
+          },
+          "updateBy": {
+            "type": "integer",
+            "description": "更新人ID"
+          },
+          "updateByName": {
+            "type": "string",
+            "description": "更新人姓名"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间"
+          }
+        }
+      },
+      "ResultVoid": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "msg": {
+            "type": "string",
+            "description": "消息"
+          },
+          "data": {
+            "description": "数据",
+            "type": "null"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "链路ID"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "时间戳",
+            "format": "int64"
+          }
+        }
+      },
+      "Serializable": {
+        "type": "object",
+        "properties": {}
+      },
+      "PageStationQuotePageVO": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationQuotePageVO",
+              "description": "StationQuotePageVO"
+            },
+            "description": "数据列表",
+            "default": "Collections.emptyList()"
+          },
+          "current": {
+            "type": "integer",
+            "description": "当前页",
+            "format": "int64",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "description": "每页显示条数，默认 20",
+            "format": "int64",
+            "default": 20
+          },
+          "total": {
+            "type": "integer",
+            "description": "总数",
+            "format": "int64",
+            "default": 0
+          },
+          "ascs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "<p>\nSQL 排序 ASC 数组\n</p>"
+          },
+          "descs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "SQL 排序 DESC 数组"
+          },
+          "searchCount": {
+            "type": "boolean",
+            "description": "是否进行 count 查询",
+            "default": true
+          },
+          "maxId": {
+            "$ref": "#/components/schemas/Serializable",
+            "description": "当前页最大标识"
+          },
+          "maxLimit": {
+            "type": "integer",
+            "description": "最大分页条数",
+            "format": "int64",
+            "default": 5000
+          }
+        }
+      },
+      "ResultPageStationQuotePageVO": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "msg": {
+            "type": "string",
+            "description": "消息"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageStationQuotePageVO",
+            "description": "数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "链路ID"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "时间戳",
+            "format": "int64"
+          }
+        }
+      },
+      "UpsUser": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": ""
+          },
+          "id": {
+            "type": "integer",
+            "description": ""
+          },
+          "name": {
+            "type": "string",
+            "description": ""
+          },
+          "staffNo": {
+            "type": "string",
+            "description": ""
+          },
+          "networkId": {
+            "type": "integer",
+            "description": ""
+          },
+          "networkName": {
+            "type": "string",
+            "description": ""
+          },
+          "networkCode": {
+            "type": "string",
+            "description": ""
+          },
+          "userType": {
+            "type": "integer",
+            "description": ""
+          },
+          "institutionalLevelId": {
+            "type": "integer",
+            "description": ""
+          },
+          "institutionalLevelDesc": {
+            "type": "string",
+            "description": ""
+          },
+          "financialCenterId": {
+            "type": "integer",
+            "description": ""
+          },
+          "isFinancialCenter": {
+            "type": "integer",
+            "description": ""
+          },
+          "loginTime": {
+            "type": "string",
+            "description": ""
+          },
+          "isDistributionCenter": {
+            "type": "integer",
+            "description": ""
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": ""
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": ""
+          }
+        }
+      },
+      "PageStationQuoteQueryRequest": {
+        "type": "object",
+        "properties": {
+          "登录loginUserId": {
+            "type": "integer",
+            "description": "登录loginUserId\nloginUserId"
+          },
+          "登录loginUserName": {
+            "type": "string",
+            "description": "登录loginUserName\nloginUserName"
+          },
+          "登录loginUserCode": {
+            "type": "string",
+            "description": "登录loginUserCode\nloginUserCode"
+          },
+          "登录loginNetworkId": {
+            "type": "integer",
+            "description": "登录loginNetworkId\nloginNetworkId"
+          },
+          "登录网点编码": {
+            "type": "string",
+            "description": "登录网点编码\nloginNetworkCode"
+          },
+          "登录网点名称": {
+            "type": "string",
+            "description": "登录网点名称\nloginNetworkName"
+          },
+          "登录网点机构级别": {
+            "type": "integer",
+            "description": "登录网点机构级别\nLoginInstitutionalLevelId"
+          },
+          "财务中心标识": {
+            "type": "integer",
+            "description": "财务中心标识\nisFinancialCenter"
+          },
+          "isFirstFranchisee": {
+            "type": "integer",
+            "description": "是否一二级加盟商 1是 2否\n是否一级加盟商 1是 2否"
+          },
+          "isSecondFranchisee": {
+            "type": "integer",
+            "description": "是否二级加盟商 1是 2否"
+          },
+          "langType": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "current": {
+            "type": "integer",
+            "description": "当前页",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "description": "每页大小",
+            "default": 20
+          },
+          "id": {
+            "type": "string",
+            "description": "上一份ID"
+          },
+          "exportType": {
+            "type": "integer",
+            "description": "导出类型 1-密文 0-明文"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UpsUser",
+            "description": "用户信息"
+          },
+          "langtype": {
+            "type": "string",
+            "description": "语言类型"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "报价名称，支持模糊查询。"
+          },
+          "groupName": {
+            "type": "string",
+            "description": "驿站分组名称，支持模糊查询。"
+          },
+          "stationKeyword": {
+            "type": "string",
+            "description": "驿站关键字，支持按驿站名称或驿站编码查询。"
+          },
+          "feeType": {
+            "type": "integer",
+            "description": "费用类型：null或0表示全部，1-取件费，2-派件费，3-仓储费。"
+          },
+          "auditStatus": {
+            "type": "integer",
+            "description": "审核状态：null表示全部，0-未审核，1-已审核。"
+          },
+          "effectiveTime": {
+            "type": "string",
+            "description": "生效时间。传入后只查询该时间落在报价生效区间内的数据。"
+          }
+        }
+      },
+      "ResultListStationQuotePageVO": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "msg": {
+            "type": "string",
+            "description": "消息"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationQuotePageVO",
+              "description": "StationQuotePageVO"
+            },
+            "description": "数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "链路ID"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "时间戳",
+            "format": "int64"
+          }
+        }
+      },
+      "GroupInfo": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "integer",
+            "description": "分组ID",
+            "format": "int64"
+          },
+          "groupName": {
+            "type": "string",
+            "description": "分组名称"
+          },
+          "networkId": {
+            "type": "integer",
+            "description": "分组所属网点ID"
+          },
+          "networkCode": {
+            "type": "string",
+            "description": "分组所属网点编码"
+          },
+          "networkName": {
+            "type": "string",
+            "description": "分组所属网点名称"
+          }
+        }
+      },
+      "FormulaInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "公式记录ID",
+            "format": "int64"
+          },
+          "startWeight": {
+            "type": "number",
+            "description": "开始重量(kg)"
+          },
+          "endWeight": {
+            "type": "number",
+            "description": "结束重量(kg)"
+          },
+          "priceFormula": {
+            "type": "string",
+            "description": "价格公式"
+          },
+          "price": {
+            "type": "number",
+            "description": "公式计算后的固定价格(可选)"
+          }
+        }
+      },
+      "StationQuoteDetailVO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "报价ID",
+            "format": "int64"
+          },
+          "quoteName": {
+            "type": "string",
+            "description": "报价名称"
+          },
+          "feeType": {
+            "type": "integer",
+            "description": "费用类型：1-取件费，2-派件费，3-仓储费"
+          },
+          "roundingMode": {
+            "type": "string",
+            "description": "计费重量进位方式，例如 B01-实际重量、B02-四舍五入"
+          },
+          "networkId": {
+            "type": "integer",
+            "description": "报价所属网点ID"
+          },
+          "networkCode": {
+            "type": "string",
+            "description": "报价所属网点编码"
+          },
+          "networkName": {
+            "type": "string",
+            "description": "报价所属网点名称"
+          },
+          "effectiveStartTime": {
+            "type": "string",
+            "description": "生效开始时间"
+          },
+          "effectiveEndTime": {
+            "type": "string",
+            "description": "生效结束时间"
+          },
+          "outboundType": {
+            "type": "integer",
+            "description": "寄件出库方式，仅取件费使用"
+          },
+          "abnormalOutboundDays": {
+            "type": "integer",
+            "description": "异常出库天数，仅仓储费使用"
+          },
+          "auditStatus": {
+            "type": "integer",
+            "description": "审核状态：0-未审核，1-已审核"
+          },
+          "auditBy": {
+            "type": "integer",
+            "description": "审核人ID"
+          },
+          "auditByName": {
+            "type": "string",
+            "description": "审核人姓名"
+          },
+          "auditNetworkId": {
+            "type": "integer",
+            "description": "审核人所属网点ID"
+          },
+          "auditNetworkName": {
+            "type": "string",
+            "description": "审核人所属网点名称"
+          },
+          "auditTime": {
+            "type": "string",
+            "description": "审核时间"
+          },
+          "createBy": {
+            "type": "integer",
+            "description": "创建人ID"
+          },
+          "createByName": {
+            "type": "string",
+            "description": "创建人姓名"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间"
+          },
+          "updateBy": {
+            "type": "integer",
+            "description": "更新人ID"
+          },
+          "updateByName": {
+            "type": "string",
+            "description": "更新人姓名"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupInfo",
+              "description": "StationQuoteDetailVO.GroupInfo"
+            },
+            "description": "报价绑定的驿站分组列表"
+          },
+          "formulas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FormulaInfo",
+              "description": "StationQuoteDetailVO.FormulaInfo"
+            },
+            "description": "报价的重量区间价格公式列表"
+          }
+        }
+      },
+      "ResultStationQuoteDetailVO": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码"
+          },
+          "msg": {
+            "type": "string",
+            "description": "消息"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StationQuoteDetailVO",
+            "description": "数据"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "链路ID"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "时间戳",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

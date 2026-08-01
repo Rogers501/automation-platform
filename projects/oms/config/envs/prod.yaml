@@ -1,0 +1,12 @@
+# Production environment.
+env: prod
+debug: false
+log_level: WARNING
+http:
+  base_url: https://api.example.com
+database:
+  type: postgresql
+  host: prod-db.example.com
+  database: oms_prod
+  username: oms
+  # password supplied via APP_DATABASE__PASSWORD or .env (never hardcoded)

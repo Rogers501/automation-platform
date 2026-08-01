@@ -1,0 +1,7 @@
+# Test environment.
+env: test
+debug: false
+log_level: INFO
+http:
+  base_url: http://jmseg-test.example.com
+  log_bodies: false

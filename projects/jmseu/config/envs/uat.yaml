@@ -1,0 +1,9 @@
+# UAT environment for jmseu (German JMS system).
+env: uat
+debug: false
+log_level: INFO
+web:
+  base_url: https://jmseu-uat.test
+  browser: chromium
+  headless: true
+  timeout_ms: 30000

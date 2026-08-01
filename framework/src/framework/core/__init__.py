@@ -1,0 +1,116 @@
+"""Framework core: configuration, logging, context, exceptions, registry.
+
+Phase 1 introduces the exception hierarchy, the configuration center, the
+HTTP client, the database client, the Redis cache client, and the message-
+queue client. The logger module provides centralized loguru configuration with
+console, file, exception, and request logging. The context module provides
+trace_id correlation across the request lifecycle via contextvars.
+"""
+
+from framework.core.config import (
+    DEFAULT_TRACE_HEADER,
+    AppEnv,
+    DatabaseSettings,
+    DatabaseType,
+    FrameworkSettings,
+    HttpSettings,
+    KafkaSettings,
+    MQSettings,
+    MQType,
+    RedisSettings,
+    YamlEnvSettingsSource,
+    get_settings,
+    reset_settings,
+)
+from framework.core.context import (
+    TestContext,
+    bind_context,
+    clear_context,
+    current_trace_id,
+    get_context,
+    new_trace_id,
+    set_context,
+    trace,
+)
+from framework.core.exceptions import (
+    CacheError,
+    ClientConnectionError,
+    ClientError,
+    ClientStatusError,
+    ClientTimeoutError,
+    ConfigError,
+    ContextError,
+    DatabaseError,
+    DependencyError,
+    FrameworkError,
+    MQError,
+    RegistryError,
+)
+from framework.core.logger import (
+    CONSOLE_FORMAT,
+    FILE_FORMAT,
+    MAX_BODY_LENGTH,
+    format_record_as_json,
+    get_logger,
+    log_exception,
+    log_request,
+    setup_logging,
+)
+from framework.core.recorder import (
+    HttpExchange,
+    RequestRecorder,
+    bind_recorder,
+    clear_recorder,
+    get_recorder,
+    record_exchange,
+)
+
+__all__ = [
+    "CONSOLE_FORMAT",
+    "DEFAULT_TRACE_HEADER",
+    "FILE_FORMAT",
+    "MAX_BODY_LENGTH",
+    "AppEnv",
+    "CacheError",
+    "ClientConnectionError",
+    "ClientError",
+    "ClientStatusError",
+    "ClientTimeoutError",
+    "ConfigError",
+    "ContextError",
+    "DatabaseError",
+    "DatabaseSettings",
+    "DatabaseType",
+    "DependencyError",
+    "FrameworkError",
+    "FrameworkSettings",
+    "HttpExchange",
+    "HttpSettings",
+    "KafkaSettings",
+    "MQError",
+    "MQSettings",
+    "MQType",
+    "RedisSettings",
+    "RegistryError",
+    "RequestRecorder",
+    "TestContext",
+    "YamlEnvSettingsSource",
+    "bind_context",
+    "bind_recorder",
+    "clear_context",
+    "clear_recorder",
+    "current_trace_id",
+    "format_record_as_json",
+    "get_context",
+    "get_logger",
+    "get_recorder",
+    "get_settings",
+    "log_exception",
+    "log_request",
+    "new_trace_id",
+    "record_exchange",
+    "reset_settings",
+    "set_context",
+    "setup_logging",
+    "trace",
+]

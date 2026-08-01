@@ -1,0 +1,12 @@
+# Test environment.
+env: test
+debug: false
+log_level: INFO
+http:
+  base_url: http://test-api.example.com
+database:
+  type: postgresql
+  host: test-db.example.com
+  database: template_test
+  username: template
+  # password supplied via APP_DATABASE__PASSWORD or .env (never hardcoded)

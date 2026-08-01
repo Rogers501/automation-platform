@@ -1,0 +1,13 @@
+# Development environment.
+env: dev
+debug: true
+log_level: DEBUG
+http:
+  base_url: http://localhost:8080
+  log_bodies: true
+database:
+  type: postgresql
+  host: localhost
+  database: oms_dev
+  username: oms
+  # password supplied via APP_DATABASE__PASSWORD or .env (never hardcoded)

@@ -1,0 +1,24 @@
+# Production environment overrides.
+env: prod
+debug: false
+log_level: WARNING
+http:
+  base_url: https://api.example.com
+database:
+  type: postgresql
+  host: prod-db.example.com
+  database: platform_prod
+  username: platform
+  pool_size: 10
+  max_overflow: 20
+redis:
+  host: prod-redis.example.com
+  db: 0
+  max_connections: 100
+mq:
+  type: kafka
+  kafka:
+    bootstrap_servers:
+      - prod-kafka.example.com:9092
+    producer_acks: all
+    producer_linger_ms: 10
