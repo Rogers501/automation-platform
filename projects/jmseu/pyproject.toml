@@ -15,5 +15,5 @@ dependencies = [
 # requires = ["hatchling"]
 # build-backend = "hatchling.build"
 #
-# [tool.uv.sources]
-# framework = { workspace = true }
+[tool.uv.sources]
+framework = { workspace = true }

@@ -23,10 +23,10 @@ class LoginPage(BasePage):
     USERNAME_INPUT = "input[placeholder='请输入员工编号']"
     PASSWORD_INPUT = "input[placeholder='请输密码']"
     LOGIN_BUTTON = "button:has-text('登录')"
-    REMEMBER_PWD = ".rp-check"
+    REMEMBER_PWD = ".lm-bottom-box > .remember-pwd > .rp-check"
 
     # Cookie consent (EU GDPR banner, may not always appear)
-    COOKIE_ACCEPT = "text=接受全部"
+    COOKIE_ACCEPT = "text=Alle akzeptieren"
 
     # Post-login verification
     WELCOME_TEXT = ".welcome"
@@ -34,11 +34,20 @@ class LoginPage(BasePage):
     async def accept_cookie_consent(self) -> None:
         """Accept the cookie consent banner if present (EU GDPR).
 
-        The banner appears on first visit; once accepted it sets a cookie
-        and does not reappear. Safe to call unconditionally.
+        The banner is Vue-rendered and may take a moment to appear after
+        DOMContentLoaded. Waits up to 5s for it, clicks accept, then waits
+        for it to disappear before continuing. Safe to call unconditionally
+        -- skips silently if the banner is absent.
         """
-        if await self.is_visible(self.COOKIE_ACCEPT):
-            await self.click(self.COOKIE_ACCEPT)
+        page = self.client.page
+        if page is None:
+            return
+        try:
+            await page.wait_for_selector(self.COOKIE_ACCEPT, timeout=5000)
+            await page.click(self.COOKIE_ACCEPT)
+            await page.wait_for_selector(self.COOKIE_ACCEPT, state="hidden", timeout=5000)
+        except Exception:
+            pass  # banner not present or already dismissed
 
     async def ensure_chinese_language(self) -> None:
         """Switch the interface to Chinese if a language selector is present.

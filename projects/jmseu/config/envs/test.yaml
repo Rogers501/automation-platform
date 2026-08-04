@@ -5,6 +5,7 @@ log_level: INFO
 web:
   base_url: https://jmseu-jms.jnt-express.com.cn
   browser: chromium
-  headless: true
+  headless: false
+  channel: chrome
   timeout_ms: 30000
   ignore_https_errors: true

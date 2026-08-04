@@ -90,6 +90,28 @@ cd projects/jmseu
    真实浏览器测试流程: 打开登录页 -> Cookie consent -> 切换中文 ->
    输入凭据 -> 滑块验证码求解 -> 验证登录成功.
 
+## IDE 配置 (PyCharm)
+
+本项目已纳入 uv workspace (`automation-platform/pyproject.toml` 的
+`[tool.uv.workspace] members` 含 `projects/jmseu`), `framework` 通过
+`[tool.uv.sources] framework = { workspace = true }` 解析为本地包.
+PyCharm 需指向**平台根**的 workspace venv (非 `projects/jmseu/.venv`):
+
+1. **解释器**: Settings -> Project -> Python Interpreter -> Existing:
+   ```
+   C:\work\PythonProject\automation-platform\.venv\Scripts\python.exe
+   ```
+2. **运行配置环境变量** (真实浏览器用例):
+   ```
+   JMSEU_REAL_BROWSER=1
+   APP_ENV=test
+   ```
+   `channel=chrome` 和 `headless=false` 已内置在 `config/envs/test.yaml`,
+   无需通过环境变量设置. 假页面用例 (`test_login_normal_scenario`) 无需任何环境变量.
+
+> **注意**: 不要选 `projects/jmseu/.venv` (空壳, 无依赖) 或 `pytest.exe` (应选 `python.exe`).
+> uv workspace venv 含 framework + playwright + pytest 全部依赖.
+
 ## LoginPage 选择器
 
 选择器基于 Playwright 录制器对真实 test 环境的录制, 集中在 `LoginPage` 类:

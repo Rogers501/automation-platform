@@ -162,6 +162,9 @@ async def web_client(base_url: str) -> AsyncIterator[WebClient]:
     settings = get_settings().web
 
     if os.environ.get("JMSEU_REAL_BROWSER") == "1":
+        # 真实浏览器模式: 每步操作至少间隔1秒(>=1000ms), 方便观察页面变化
+        if settings.slow_mo_ms < 1000:
+            settings = settings.model_copy(update={"slow_mo_ms": 1000})
         async with WebClient(settings=settings) as client:
             yield client
     else:
