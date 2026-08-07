@@ -1,0 +1,11 @@
+# Development environment for jmsco (哥伦比亚 JMS system).
+env: dev
+debug: true
+log_level: DEBUG
+web:
+  base_url: https://jmsco.test
+  browser: chromium
+  headless: true
+  timeout_ms: 30000
+  viewport_width: 1280
+  viewport_height: 720

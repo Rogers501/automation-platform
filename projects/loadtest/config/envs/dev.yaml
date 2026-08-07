@@ -1,0 +1,9 @@
+# Development environment for loadtest.
+env: dev
+debug: true
+log_level: INFO
+http:
+  base_url: http://localhost:8080
+  max_connections: 100
+web:
+  base_url: http://localhost:8080

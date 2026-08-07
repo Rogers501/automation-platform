@@ -1,0 +1,10 @@
+# Production environment for loadtest.
+# Credentials must come from env vars / .env, never hardcoded (rule 10).
+env: prod
+debug: false
+log_level: WARNING
+http:
+  base_url: https://prod.example.com
+  max_connections: 100
+web:
+  base_url: https://prod.example.com

@@ -1,0 +1,39 @@
+# Load test scenarios for UAT environment (JMS Colombia UAT).
+# Each scenario becomes a weighted Locust task.
+# Data-provider templates ({{uuid}}, {{csv.file.col}}) are resolved at runtime.
+scenarios:
+  - name: login_page_view
+    description: "访问登录页 (高频, 只读)"
+    weight: 5
+    think_time: 0.5
+    steps:
+      - name: "GET /login"
+        method: GET
+        url: /login
+        headers:
+          X-Trace-Id: "{{uuid}}"
+        expected_status: 200
+        think_time: 1.0
+
+  - name: login_submit
+    description: "提交登录表单 (中频, 含验证码)"
+    weight: 1
+    think_time: 2.0
+    steps:
+      - name: "GET /login"
+        method: GET
+        url: /login
+        headers:
+          X-Trace-Id: "{{uuid}}"
+        expected_status: 200
+        think_time: 0.5
+      - name: "POST /login"
+        method: POST
+        url: /login
+        headers:
+          X-Trace-Id: "{{uuid}}"
+        json:
+          username: "{{csv.users.username}}"
+          password: "{{csv.users.password}}"
+        expected_status: 200
+        think_time: 2.0

@@ -1,0 +1,9 @@
+# UAT environment for loadtest (JMS UAT endpoints).
+env: uat
+debug: false
+log_level: INFO
+http:
+  base_url: https://demo.jtexpress.co
+  max_connections: 100
+web:
+  base_url: https://demo.jtexpress.co

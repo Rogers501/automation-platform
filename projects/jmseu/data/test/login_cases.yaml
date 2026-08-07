@@ -1,0 +1,9 @@
+# jmseu test 环境登录测试数据 (数据驱动).
+# 每条 case 对应一个参数化测试用例; APP_ENV=test 时加载此文件.
+# 凭据为 test 环境专用, 与 UAT 环境数据隔离.
+cases:
+  - id: normal_admin
+    description: 管理员正常登录 (test环境)
+    username: "01943937"
+    password: "Jt7788521+"
+    remember: true

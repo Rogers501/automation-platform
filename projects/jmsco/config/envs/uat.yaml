@@ -1,0 +1,11 @@
+# UAT environment for jmsco (哥伦比亚 JMS system).
+env: uat
+debug: false
+log_level: INFO
+web:
+  base_url: https://demo.jtexpress.co
+  browser: chromium
+  headless: false
+  channel: chrome
+  timeout_ms: 30000
+  ignore_https_errors: true

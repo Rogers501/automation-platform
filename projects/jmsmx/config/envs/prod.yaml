@@ -1,0 +1,10 @@
+# Production environment for jmsmx (墨西哥 JMS system).
+# Credentials must come from env vars / .env, never hardcoded (rule 10).
+env: prod
+debug: false
+log_level: WARNING
+web:
+  base_url: https://jmsmx.prod
+  browser: chromium
+  headless: true
+  timeout_ms: 30000

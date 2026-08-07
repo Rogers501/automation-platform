@@ -1,0 +1,10 @@
+# Cost calculation environment (internal API, not JMS UAT).
+# Target API: http://10.94.7.5:30576/spmoapi/spmCustomerShippingQuote/comCostAndWeight
+env: cost
+debug: false
+log_level: INFO
+http:
+  base_url: http://10.94.7.5:30576
+  max_connections: 200
+web:
+  base_url: http://10.94.7.5:30576

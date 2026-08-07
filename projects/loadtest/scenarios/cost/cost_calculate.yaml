@@ -1,0 +1,37 @@
+# Load test scenario: 单条算费接口压测 (CSV 数据驱动)
+# Data source: data/cost_data.csv (fetched by scripts/fetch_data.py)
+# Target API:  http://10.94.7.5:30576/spmoapi/spmCustomerShippingQuote/comCostAndWeight
+#
+# Run:
+#   $env:APP_ENV="cost"; $env:SCENARIO_FILE="scenarios/cost/cost_calculate.yaml"
+#   $env:LOAD_PROFILE="load_profile_cost"; locust --headless -t 3600s
+
+scenarios:
+  - name: cost_calculate
+    description: "单条算费接口压测 (CSV 数据驱动, 百万级数据源)"
+    weight: 1
+    think_time: 0
+    headers:
+      authtoken: "17f718ef5e0d4f108a66cc57c239dd01"
+      Content-Type: "application/json"
+    steps:
+      - name: "POST comCostAndWeight"
+        method: POST
+        url: /spmoapi/spmCustomerShippingQuote/comCostAndWeight
+        json:
+          waybillId: "{{csv.cost_data.waybillId}}"
+          startPointNetworkCode: "{{csv.cost_data.startPointNetworkCode}}"
+          terminalPostalCode: "{{csv.cost_data.terminalPostalCode}}"
+          productTypeId: "{{int:csv.cost_data.productTypeId}}"
+          productTypeCode: "{{csv.cost_data.productTypeCode}}"
+          goodsTypeId: "{{int:csv.cost_data.goodsTypeId}}"
+          goodsTypeCode: "{{csv.cost_data.goodsTypeCode}}"
+          serviceMethodCode: "01"
+          number: "{{float:csv.cost_data.number}}"
+          currentTime: "{{csv.cost_data.currentTime}}"
+          customerId: 1965
+          smMode: 2
+          insuredAmount: "{{float:csv.cost_data.insuredAmount}}"
+          startNetworkCode: "{{csv.cost_data.startNetworkCode}}"
+        expected_status: 200
+        think_time: 0

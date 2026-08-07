@@ -1,0 +1,34 @@
+# Load profile: staged ramp-up / hold / ramp-down (YAML-driven).
+# Locust reads this via build_shape_class() -- overrides --users/--spawn-rate.
+# Set APP_ENV to pick scenario + env config; this profile is env-agnostic.
+
+profile:
+  stop_after_last: true
+  stages:
+    - name: ramp_up
+      target_users: 50
+      spawn_rate: 5
+      duration: 30
+    - name: hold
+      target_users: 50
+      spawn_rate: 0
+      duration: 60
+    - name: ramp_down
+      target_users: 0
+      spawn_rate: 10
+      duration: 10
+
+# Post-run SLA assertions (evaluated against aggregated metrics).
+assertions:
+  - metric: p99_ms
+    operator: lt
+    threshold: 500
+    description: "P99 latency under 500ms"
+  - metric: error_rate
+    operator: lt
+    threshold: 0.01
+    description: "Error rate under 1%"
+  - metric: rps
+    operator: gt
+    threshold: 10
+    description: "Throughput above 10 RPS"

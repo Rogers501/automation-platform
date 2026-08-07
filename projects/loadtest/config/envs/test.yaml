@@ -1,0 +1,9 @@
+# Test environment for loadtest (JMS test UAT endpoints).
+env: test
+debug: false
+log_level: INFO
+http:
+  base_url: https://demo.jtjms-mx.com
+  max_connections: 100
+web:
+  base_url: https://demo.jtjms-mx.com
