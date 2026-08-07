@@ -6,8 +6,7 @@ human-in-the-loop approach: the operator completes the slide manually in
 the visible browser, then the script waits for the dashboard's text to
 confirm login success.
 
-Only runs in real-browser mode (``JMSEU_REAL_BROWSER=1``); the CI fake page
-bypasses the captcha entirely (rule 14).
+Only runs in real-browser mode; this project has no CI fake-page test.
 """
 
 from __future__ import annotations

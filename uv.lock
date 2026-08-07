@@ -10,7 +10,9 @@ resolution-markers = [
 members = [
     "automation-platform",
     "framework",
+    "jmsco",
     "jmseu",
+    "jmsmx",
 ]
 
 [[package]]
@@ -498,9 +500,39 @@ wheels = [
 ]
 
 [[package]]
+name = "jmsco"
+version = "0.1.0"
+source = { virtual = "projects/jmsco" }
+dependencies = [
+    { name = "framework" },
+    { name = "playwright" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "framework", editable = "framework" },
+    { name = "playwright", specifier = ">=1.40" },
+]
+
+[[package]]
 name = "jmseu"
 version = "0.1.0"
 source = { virtual = "projects/jmseu" }
+dependencies = [
+    { name = "framework" },
+    { name = "playwright" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "framework", editable = "framework" },
+    { name = "playwright", specifier = ">=1.40" },
+]
+
+[[package]]
+name = "jmsmx"
+version = "0.1.0"
+source = { virtual = "projects/jmsmx" }
 dependencies = [
     { name = "framework" },
     { name = "playwright" },

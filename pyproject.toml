@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["framework", "projects/jmseu"]
+members = ["framework", "projects/jmseu", "projects/jmsmx", "projects/jmsco", "projects/loadtest"]
 
 [tool.uv.sources]
 framework = { workspace = true }
@@ -42,7 +42,7 @@ module = "yaml"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["aio_pika", "aio_pika.*", "appium", "appium.*", "redis", "redis.*", "aiokafka", "aiokafka.*", "rocketmq", "rocketmq.*", "playwright", "playwright.*", "selenium", "selenium.*"]
+module = ["aio_pika", "aio_pika.*", "appium", "appium.*", "redis", "redis.*", "aiokafka", "aiokafka.*", "rocketmq", "rocketmq.*", "playwright", "playwright.*", "selenium", "selenium.*", "faker", "faker.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

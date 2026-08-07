@@ -67,6 +67,7 @@ class AppEnv(enum.Enum):
     TEST = "test"
     UAT = "uat"
     PROD = "prod"
+    COST = "cost"
 
     @classmethod
     def from_string(cls, value: str) -> AppEnv:
