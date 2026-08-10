@@ -1,32 +1,29 @@
 # ============================================================================
-# 压测场景: 获取运单数据批量接口 (巴西 jmsbr)
+# 压测场景: 获取运单数据单条接口 (巴西 jmsbr)
 # ============================================================================
 #
-# 接口名称: 获取运单数据批量
-# 接口地址: http://10.94.7.103:30122/waybillouterapi/spm/common/listByWaybillNos
+# 接口名称: 获取运单数据单条
+# 接口地址: http://10.94.7.103:30122/waybillouterapi/spm/common/get
 # 请求方式: POST
 # 请求头:   authtoken: 17f718ef5e0d4f108a66cc57c239dd01
 #           Content-Type: application/json
 #
 # 请求体说明:
-#   waybillNos -- 运单号数组, 每次请求传 2 个, 分别从两个数据源文件逐行读取
+#   waybillNo -- 运单号字符串, 每次请求传 1 个, 从数据源文件逐行读取
 #   columns    -- 固定的 12 个费用字段列名, 不需要动态参数
 #
 # 数据源文件 (TXT 格式, 每行一个运单号, 顺序读取循环):
-#   data/jmsbr/waybill_nos1.txt  -- 第一个运单号来源 (17MB, 百万级)
-#   data/jmsbr/waybill_nos2.txt  -- 第二个运单号来源 (17MB, 百万级)
+#   data/jmsbr/waybill_nos1.txt  -- 运单号来源 (17MB, 百万级)
 #
 # 数据驱动机制:
 #   {{data.jmsbr/waybill_nos1.value}} -- 从 waybill_nos1.txt 逐行读取, 行号自动递增
-#   {{data.jmsbr/waybill_nos2.value}} -- 从 waybill_nos2.txt 逐行读取, 行号自动递增
-#   同一请求中两个文件各自独立推进游标, 互不干扰
 #   文件读完后自动从头循环
 #
 # 运行方式 (PyCharm 中用 run.py, 一个配置切换场景):
-#   python run.py waybill_query -t 10s                # 快速调试, 1 个用户, 10 秒
-#   python run.py waybill_query -t 10s -u 200 -r 20   # 200 并发, 10 秒
-#   python run.py waybill_query --shape -t 3600s      # 完整压测形状 (1 小时)
-#   python run.py waybill_query --shape -p load_profile_jmsbr_stepped -t 840s  # 阶梯加压找瓶颈
+#   python run.py waybill_get -t 10s                # 快速调试, 1 个用户, 10 秒
+#   python run.py waybill_get -t 10s -u 200 -r 20   # 200 并发, 10 秒
+#   python run.py waybill_get --shape -t 3600s      # 完整压测形状 (1 小时)
+#   python run.py waybill_get --shape -p load_profile_jmsbr_stepped -t 840s  # 阶梯加压找瓶颈
 #
 # 压测形状 (config/load_profile_jmsbr.yaml):
 #   200 并发用户, ramp-up 2min -> hold 56min -> ramp-down 2min (共 1 小时)
@@ -34,21 +31,19 @@
 # ============================================================================
 
 scenarios:
-  - name: waybill_query_spm
-    description: "获取运单数据批量接口压测 (spm/common, 2个运单号/请求, TXT数据驱动)"
+  - name: waybill_get_spm
+    description: "获取运单数据单条接口压测 (spm/common/get, 1个运单号/请求, TXT数据驱动)"
     weight: 1
     think_time: 0
     headers:
       authtoken: "17f718ef5e0d4f108a66cc57c239dd01"
       Content-Type: "application/json"
     steps:
-      - name: "POST spm/common/listByWaybillNos"
+      - name: "POST spm/common/get"
         method: POST
-        url: http://10.94.7.103:30122/waybillouterapi/spm/common/listByWaybillNos
+        url: http://10.94.7.103:30122/waybillouterapi/spm/common/get
         json:
-          waybillNos:
-            - "{{data.jmsbr/waybill_nos1.value}}"
-            - "{{data.jmsbr/waybill_nos2.value}}"
+          waybillNo: "{{data.jmsbr/waybill_nos1.value}}"
           columns:
             - "freight"
             - "totalFreight"

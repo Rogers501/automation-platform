@@ -35,6 +35,9 @@ class LoadStep(BaseModel):
         json: JSON body (serializable object).
         data: Form-encoded body.
         expected_status: Expected HTTP status (for assertion).
+        assert_json: Business-level JSON body assertion (key-value pairs).
+            Each key is checked against the response JSON body; if any value
+            does not match, the request is marked as failure.
         think_time: Pause (seconds) after this step before the next.
     """
 
@@ -48,6 +51,7 @@ class LoadStep(BaseModel):
     json_body: Any | None = Field(default=None, alias="json")
     data: dict[str, Any] | None = None
     expected_status: int | None = None
+    assert_json: dict[str, Any] | None = None
     think_time: float = 0.0
 
 
@@ -95,13 +99,9 @@ def load_scenarios(path: str | Path) -> list[LoadScenario]:
     try:
         raw = yaml.safe_load(p.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
-        raise ScenarioError(
-            f"failed to load scenarios from {p}", context={"path": str(p)}
-        ) from exc
+        raise ScenarioError(f"failed to load scenarios from {p}", context={"path": str(p)}) from exc
 
     items = raw.get("scenarios", raw) if isinstance(raw, dict) else raw
     if not isinstance(items, list):
-        raise ScenarioError(
-            f"scenarios in {p} must be a list", context={"path": str(p)}
-        )
+        raise ScenarioError(f"scenarios in {p} must be a list", context={"path": str(p)})
     return [LoadScenario.model_validate(item) for item in items]

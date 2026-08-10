@@ -1,12 +1,52 @@
-# Load test scenario: 单条算费接口压测 (巴西 jmsbr, CSV 数据驱动)
-# Data source: data/jmsbr/cost_data.csv (fetched by scripts/fetch_data_jmsbr.py)
-# Target API:  http://10.94.7.5:30576/spmoapi/spmCustomerShippingQuote/comCostAndWeight
+# ============================================================================
+# 压测场景: 单条算费接口 (巴西 jmsbr)
+# ============================================================================
 #
-# Run:
-#   $env:APP_ENV="jmsbr"
-#   $env:SCENARIO_FILE="scenarios/jmsbr/cost_calculate.yaml"
-#   $env:LOAD_PROFILE="load_profile_jmsbr"
-#   locust --headless -t 3600s
+# 接口名称: 单条算费
+# 接口地址: http://10.94.7.5:30576/spmoapi/spmCustomerShippingQuote/comCostAndWeight
+# 请求方式: POST
+# 请求头:   authtoken: 17f718ef5e0d4f108a66cc57c239dd01
+#           Content-Type: application/json
+#
+# 请求体说明:
+#   waybillId              -- 运单表 ID, 从数据源文件读取
+#   startPointNetworkCode  -- 寄件网点编码, 从数据源文件读取
+#   terminalPostalCode     -- 收件邮编, 从数据源文件读取
+#   productTypeId          -- 产品类型 ID (整数), 从数据源文件读取
+#   productTypeCode        -- 产品类型 Code, 从数据源文件读取
+#   goodsTypeId            -- 物品类型 ID (整数), 从数据源文件读取
+#   goodsTypeCode          -- 物品类型 Code, 从数据源文件读取
+#   serviceMethodCode      -- 寄件服务方式, 固定写 "01"
+#   number                 -- 包裹计费重量 (浮点数), 从数据源文件读取
+#   currentTime            -- 录入时间, 从数据源文件读取
+#   customerId             -- 客户 ID, 固定写 1965 (研发提供)
+#   smMode                 -- 结算方式, 固定写 2
+#   insuredAmount          -- 报价金额 (浮点数), 从数据源文件读取
+#   startNetworkCode       -- 寄件网点编码, 从数据源文件读取
+#
+# 数据源文件 (CSV 格式, 每行一条记录, 顺序读取循环):
+#   data/jmsbr/cost_data.csv  -- 算费数据来源 (百万级)
+#   字段: waybillId, startPointNetworkCode, terminalPostalCode, productTypeId, ...
+#
+# 数据驱动机制:
+#   {{data.jmsbr/cost_data.waybillId}}              -- 从 cost_data.csv 读取 waybillId 列
+#   {{int:data.jmsbr/cost_data.productTypeId}}      -- 读取并转为整数
+#   {{float:data.jmsbr/cost_data.number}}           -- 读取并转为浮点数
+#   文件读完后自动从头循环
+#
+# 运行方式 (PyCharm 中用 run.py, 一个配置切换场景):
+#   python run.py cost_calculate -t 10s                # 快速调试, 1 个用户, 10 秒
+#   python run.py jmsbr/cost_calculate -t 10s -u 200   # 200 并发, 10 秒 (加 jmsbr/ 前缀消歧)
+#   python run.py jmsbr/cost_calculate --shape -t 3600s  # 完整压测形状 (1 小时)
+#
+# 压测形状 (config/load_profile_jmsbr.yaml):
+#   200 并发用户, ramp-up 2min -> hold 56min -> ramp-down 2min (共 1 小时)
+#   SLA 断言: P99 < 2s, 错误率 < 5%, RPS > 50
+#
+# 阶梯加压找瓶颈 (config/load_profile_jmsbr_stepped.yaml):
+#   50 -> 100 -> 150 -> 200 -> 300 -> 400 -> 500 用户, 每档 2 分钟, 共 14 分钟
+#   python run.py jmsbr/cost_calculate --shape -p load_profile_jmsbr_stepped -t 840s
+# ============================================================================
 
 scenarios:
   - name: cost_calculate
@@ -36,4 +76,6 @@ scenarios:
           insuredAmount: "{{float:data.jmsbr/cost_data.insuredAmount}}"
           startNetworkCode: "{{data.jmsbr/cost_data.startNetworkCode}}"
         expected_status: 200
+        assert_json:
+          succ: true
         think_time: 0

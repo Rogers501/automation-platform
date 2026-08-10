@@ -1,0 +1,61 @@
+# Stepped load profile for JMS Brazil (jmsbr) bottleneck discovery.
+#
+# Gradually increases concurrent users in steps to find the breaking point.
+# Each step holds for 2 minutes so response time and error rate stabilize.
+#
+# Total: 7 steps * 120s = 840s (14 min)
+#
+# Usage:
+#   python run.py waybill_get --shape -t 840s
+#   (set LOAD_PROFILE=load_profile_jmsbr_stepped or use -p flag)
+#
+# After the test, check the HTML report for the step where:
+#   - P99 latency spikes above 2s
+#   - Error rate exceeds 5%
+#   That user count is your interface bottleneck.
+
+
+#  执行阶梯压测的命令  python run.py waybill_get --shape -p load_profile_jmsbr_stepped -t 840s
+
+profile:
+  stop_after_last: true
+  stages:
+    - name: step_50
+      target_users: 50
+      spawn_rate: 25
+      duration: 120
+    - name: step_100
+      target_users: 100
+      spawn_rate: 25
+      duration: 120
+    - name: step_150
+      target_users: 150
+      spawn_rate: 25
+      duration: 120
+    - name: step_200
+      target_users: 200
+      spawn_rate: 25
+      duration: 120
+    - name: step_300
+      target_users: 300
+      spawn_rate: 50
+      duration: 120
+    - name: step_400
+      target_users: 400
+      spawn_rate: 50
+      duration: 120
+    - name: step_500
+      target_users: 500
+      spawn_rate: 50
+      duration: 120
+
+# Post-run SLA assertions (against full-test aggregate).
+assertions:
+  - metric: p99_ms
+    operator: lt
+    threshold: 2000
+    description: "P99 latency under 2s"
+  - metric: error_rate
+    operator: lt
+    threshold: 0.05
+    description: "Error rate under 5%"

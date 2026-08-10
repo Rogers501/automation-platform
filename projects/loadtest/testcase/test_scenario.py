@@ -35,32 +35,71 @@ def test_load_scenarios_from_jmsbr_cost() -> None:
     assert step.json_body["waybillId"] == "{{data.jmsbr/cost_data.waybillId}}"
     assert step.json_body["productTypeId"] == "{{int:data.jmsbr/cost_data.productTypeId}}"
     assert step.json_body["number"] == "{{float:data.jmsbr/cost_data.number}}"
+    assert step.assert_json == {"succ": True}
+
+
+_COLUMNS = [
+    "freight",
+    "totalFreight",
+    "insuranceFee",
+    "riskFee",
+    "packageChargeWeight",
+    "returnFee",
+    "packageCost",
+    "orderWeight",
+    "icmsIssAmount",
+    "issFee",
+    "picms",
+    "settleAreaName",
+]
 
 
 def test_load_scenarios_from_jmsbr_waybill_query() -> None:
-    """JMS Brazil waybill query scenario loads from scenarios/jmsbr/waybill_query.yaml."""
+    """spm/common/listByWaybillNos: 2 waybillNos from 2 TXT files."""
     scenarios = load_scenarios("scenarios/jmsbr/waybill_query.yaml")
     assert len(scenarios) == 1
-    assert scenarios[0].name == "waybill_query"
+    assert scenarios[0].name == "waybill_query_spm"
     step = scenarios[0].steps[0]
     assert step.method == "POST"
-    assert "listByWaybillNos" in step.url
+    assert "spm/common/listByWaybillNos" in step.url
     assert step.json_body is not None
-    assert step.json_body["columns"] == [
-        "freight",
-        "totalFreight",
-        "insuranceFee",
-        "riskFee",
-        "packageChargeWeight",
-        "returnFee",
-        "packageCost",
-        "orderWeight",
-        "icmsIssAmount",
-        "issFee",
-        "picms",
-        "settleAreaName",
+    assert step.json_body["columns"] == _COLUMNS
+    assert step.json_body["waybillNos"] == [
+        "{{data.jmsbr/waybill_nos1.value}}",
+        "{{data.jmsbr/waybill_nos2.value}}",
     ]
-    assert step.json_body["waybillNos"] == ["{{data.jmsbr/waybill_nos.value}}"]
+    assert step.assert_json == {"succ": True}
+
+
+def test_load_scenarios_from_jmsbr_waybill_query_order() -> None:
+    """order/listByWaybillNos: 2 waybillNos from 2 TXT files."""
+    scenarios = load_scenarios("scenarios/jmsbr/waybill_query_order.yaml")
+    assert len(scenarios) == 1
+    assert scenarios[0].name == "waybill_query_order"
+    step = scenarios[0].steps[0]
+    assert step.method == "POST"
+    assert "order/listByWaybillNos" in step.url
+    assert step.json_body is not None
+    assert step.json_body["columns"] == _COLUMNS
+    assert step.json_body["waybillNos"] == [
+        "{{data.jmsbr/waybill_nos1.value}}",
+        "{{data.jmsbr/waybill_nos2.value}}",
+    ]
+    assert step.assert_json == {"succ": True}
+
+
+def test_load_scenarios_from_jmsbr_waybill_get() -> None:
+    """spm/common/get: single waybillNo from TXT file."""
+    scenarios = load_scenarios("scenarios/jmsbr/waybill_get.yaml")
+    assert len(scenarios) == 1
+    assert scenarios[0].name == "waybill_get_spm"
+    step = scenarios[0].steps[0]
+    assert step.method == "POST"
+    assert "spm/common/get" in step.url
+    assert step.json_body is not None
+    assert step.json_body["columns"] == _COLUMNS
+    assert step.json_body["waybillNo"] == "{{data.jmsbr/waybill_nos1.value}}"
+    assert step.assert_json == {"succ": True}
 
 
 def test_load_scenarios_from_cost_env() -> None:
