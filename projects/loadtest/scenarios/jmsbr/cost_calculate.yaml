@@ -1,0 +1,39 @@
+# Load test scenario: 单条算费接口压测 (巴西 jmsbr, CSV 数据驱动)
+# Data source: data/jmsbr/cost_data.csv (fetched by scripts/fetch_data_jmsbr.py)
+# Target API:  http://10.94.7.5:30576/spmoapi/spmCustomerShippingQuote/comCostAndWeight
+#
+# Run:
+#   $env:APP_ENV="jmsbr"
+#   $env:SCENARIO_FILE="scenarios/jmsbr/cost_calculate.yaml"
+#   $env:LOAD_PROFILE="load_profile_jmsbr"
+#   locust --headless -t 3600s
+
+scenarios:
+  - name: cost_calculate
+    description: "单条算费接口压测 (巴西, CSV 数据驱动, 百万级数据源)"
+    weight: 1
+    think_time: 0
+    headers:
+      authtoken: "17f718ef5e0d4f108a66cc57c239dd01"
+      Content-Type: "application/json"
+    steps:
+      - name: "POST comCostAndWeight"
+        method: POST
+        url: /spmoapi/spmCustomerShippingQuote/comCostAndWeight
+        json:
+          waybillId: "{{data.jmsbr/cost_data.waybillId}}"
+          startPointNetworkCode: "{{data.jmsbr/cost_data.startPointNetworkCode}}"
+          terminalPostalCode: "{{data.jmsbr/cost_data.terminalPostalCode}}"
+          productTypeId: "{{int:data.jmsbr/cost_data.productTypeId}}"
+          productTypeCode: "{{data.jmsbr/cost_data.productTypeCode}}"
+          goodsTypeId: "{{int:data.jmsbr/cost_data.goodsTypeId}}"
+          goodsTypeCode: "{{data.jmsbr/cost_data.goodsTypeCode}}"
+          serviceMethodCode: "01"
+          number: "{{float:data.jmsbr/cost_data.number}}"
+          currentTime: "{{data.jmsbr/cost_data.currentTime}}"
+          customerId: 1965
+          smMode: 2
+          insuredAmount: "{{float:data.jmsbr/cost_data.insuredAmount}}"
+          startNetworkCode: "{{data.jmsbr/cost_data.startNetworkCode}}"
+        expected_status: 200
+        think_time: 0

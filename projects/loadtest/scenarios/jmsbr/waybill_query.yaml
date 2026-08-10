@@ -1,0 +1,47 @@
+# Load test scenario: 按运单号查询费用明细接口压测 (巴西 jmsbr, TXT 数据驱动)
+# Data source: data/jmsbr/waybill_nos.txt (one waybillNo per line)
+# Target API:  http://10.94.7.103:30122/waybillouterapi/spm/common/listByWaybillNos
+#
+# Run:
+#   $env:APP_ENV="jmsbr"
+#   $env:SCENARIO_FILE="scenarios/jmsbr/waybill_query.yaml"
+#   $env:LOAD_PROFILE="load_profile_jmsbr"
+#   locust --headless -t 3600s
+#
+# 数据源文件格式 (txt, 每行一个运单号):
+#   888700175934187
+#   888700175934188
+#   888700175934189
+#   ...
+# 放到: data/jmsbr/waybill_nos.txt
+
+scenarios:
+  - name: waybill_query
+    description: "按运单号查询费用明细 (TXT 数据驱动, 单号查询)"
+    weight: 1
+    think_time: 0
+    headers:
+      authtoken: "17f718ef5e0d4f108a66cc57c239dd01"
+      Content-Type: "application/json"
+    steps:
+      - name: "POST listByWaybillNos"
+        method: POST
+        url: /waybillouterapi/spm/common/listByWaybillNos
+        json:
+          columns:
+            - "freight"
+            - "totalFreight"
+            - "insuranceFee"
+            - "riskFee"
+            - "packageChargeWeight"
+            - "returnFee"
+            - "packageCost"
+            - "orderWeight"
+            - "icmsIssAmount"
+            - "issFee"
+            - "picms"
+            - "settleAreaName"
+          waybillNos:
+            - "{{data.jmsbr/waybill_nos.value}}"
+        expected_status: 200
+        think_time: 0

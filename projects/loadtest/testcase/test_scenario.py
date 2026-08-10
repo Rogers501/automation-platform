@@ -23,6 +23,46 @@ def test_load_scenarios_from_uat_env() -> None:
     assert scenarios[1].steps[1].method == "POST"
 
 
+def test_load_scenarios_from_jmsbr_cost() -> None:
+    """JMS Brazil cost calculation scenario loads from scenarios/jmsbr/cost_calculate.yaml."""
+    scenarios = load_scenarios("scenarios/jmsbr/cost_calculate.yaml")
+    assert len(scenarios) == 1
+    assert scenarios[0].name == "cost_calculate"
+    step = scenarios[0].steps[0]
+    assert step.method == "POST"
+    assert "comCostAndWeight" in step.url
+    assert step.json_body is not None
+    assert step.json_body["waybillId"] == "{{data.jmsbr/cost_data.waybillId}}"
+    assert step.json_body["productTypeId"] == "{{int:data.jmsbr/cost_data.productTypeId}}"
+    assert step.json_body["number"] == "{{float:data.jmsbr/cost_data.number}}"
+
+
+def test_load_scenarios_from_jmsbr_waybill_query() -> None:
+    """JMS Brazil waybill query scenario loads from scenarios/jmsbr/waybill_query.yaml."""
+    scenarios = load_scenarios("scenarios/jmsbr/waybill_query.yaml")
+    assert len(scenarios) == 1
+    assert scenarios[0].name == "waybill_query"
+    step = scenarios[0].steps[0]
+    assert step.method == "POST"
+    assert "listByWaybillNos" in step.url
+    assert step.json_body is not None
+    assert step.json_body["columns"] == [
+        "freight",
+        "totalFreight",
+        "insuranceFee",
+        "riskFee",
+        "packageChargeWeight",
+        "returnFee",
+        "packageCost",
+        "orderWeight",
+        "icmsIssAmount",
+        "issFee",
+        "picms",
+        "settleAreaName",
+    ]
+    assert step.json_body["waybillNos"] == ["{{data.jmsbr/waybill_nos.value}}"]
+
+
 def test_load_scenarios_from_cost_env() -> None:
     """Cost calculation scenario loads from scenarios/cost/cost_calculate.yaml."""
     scenarios = load_scenarios("scenarios/cost/cost_calculate.yaml")

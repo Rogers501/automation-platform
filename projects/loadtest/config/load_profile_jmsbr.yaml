@@ -1,0 +1,37 @@
+# Load profile for JMS Brazil (jmsbr) load tests.
+# 200 concurrent users, 1 hour sustained.
+# Total: 120s ramp-up + 3360s hold + 120s ramp-down = 3600s (1 hour).
+#
+# Usage:
+#   $env:LOAD_PROFILE="load_profile_jmsbr"; locust --headless -t 3600s
+
+profile:
+  stop_after_last: true
+  stages:
+    - name: ramp_up
+      target_users: 200
+      spawn_rate: 10
+      duration: 120
+    - name: hold
+      target_users: 200
+      spawn_rate: 0
+      duration: 3360
+    - name: ramp_down
+      target_users: 0
+      spawn_rate: 20
+      duration: 120
+
+# Post-run SLA assertions.
+assertions:
+  - metric: p99_ms
+    operator: lt
+    threshold: 2000
+    description: "P99 latency under 2s"
+  - metric: error_rate
+    operator: lt
+    threshold: 0.05
+    description: "Error rate under 5%"
+  - metric: rps
+    operator: gt
+    threshold: 50
+    description: "Throughput above 50 RPS"

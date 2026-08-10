@@ -1,0 +1,14 @@
+# JMS Brazil (jmsbr) environment for load testing.
+# Two target APIs on different hosts:
+#   - comCostAndWeight:  http://10.94.7.5:30576
+#   - listByWaybillNos:   http://10.94.7.103:30122
+# base_url set to the primary target; the second API can use an absolute URL
+# in the scenario YAML (Locust supports absolute URLs in client.request).
+env: jmsbr
+debug: false
+log_level: INFO
+http:
+  base_url: http://10.94.7.5:30576
+  max_connections: 200
+web:
+  base_url: http://10.94.7.5:30576

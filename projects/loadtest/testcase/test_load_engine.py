@@ -391,6 +391,128 @@ class TestDataProvider:
         assert result == "01943936"
 
 
+class TestDataProviderMultiFormat:
+    """Data provider supports CSV, TXT, JSON, JSONL files."""
+
+    def test_txt_single_column(self, tmp_path: Path) -> None:
+        """{{data.file.value}} reads a TXT file (one value per line)."""
+        txt_file = tmp_path / "ids.txt"
+        txt_file.write_text("AAA\nBBB\nCCC\n", encoding="utf-8")
+        provider = DataProvider(csv_dir=tmp_path)
+        assert provider.resolve("{{data.ids.value}}") == "AAA"
+        assert provider.resolve("{{data.ids.value}}") == "BBB"
+        assert provider.resolve("{{data.ids.value}}") == "CCC"
+        # Wraps around.
+        assert provider.resolve("{{data.ids.value}}") == "AAA"
+
+    def test_json_array_of_objects(self, tmp_path: Path) -> None:
+        """{{data.file.col}} reads a JSON array of objects.
+
+        Multiple columns from the same file resolved in a single resolve()
+        call read the same row (row consistency).
+        """
+        json_file = tmp_path / "records.json"
+        json_file.write_text(
+            '[{"id": "001", "name": "alice"}, {"id": "002", "name": "bob"}]',
+            encoding="utf-8",
+        )
+        provider = DataProvider(csv_dir=tmp_path)
+        # Single resolve: both columns from row 0.
+        result = provider.resolve({"id": "{{data.records.id}}", "name": "{{data.records.name}}"})
+        assert result["id"] == "001"
+        assert result["name"] == "alice"
+        # Next resolve: row 1.
+        result = provider.resolve({"id": "{{data.records.id}}", "name": "{{data.records.name}}"})
+        assert result["id"] == "002"
+        assert result["name"] == "bob"
+
+    def test_jsonl_one_object_per_line(self, tmp_path: Path) -> None:
+        """{{data.file.col}} reads JSON Lines format.
+
+        Multiple columns from the same file in one resolve() read the same row.
+        """
+        jsonl_file = tmp_path / "events.jsonl"
+        jsonl_file.write_text(
+            '{"waybillNo": "111", "weight": "1.5"}\n{"waybillNo": "222", "weight": "2.5"}\n',
+            encoding="utf-8",
+        )
+        provider = DataProvider(csv_dir=tmp_path)
+        result = provider.resolve(
+            {"no": "{{data.events.waybillNo}}", "wt": "{{data.events.weight}}"}
+        )
+        assert result["no"] == "111"
+        assert result["wt"] == "1.5"
+        result = provider.resolve(
+            {"no": "{{data.events.waybillNo}}", "wt": "{{data.events.weight}}"}
+        )
+        assert result["no"] == "222"
+        assert result["wt"] == "2.5"
+
+    def test_data_alias_for_csv(self, tmp_path: Path) -> None:
+        """{{data.file.col}} works for CSV files too (data is generic alias)."""
+        csv_file = tmp_path / "users.csv"
+        with csv_file.open("w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["username", "password"])
+            writer.writeheader()
+            writer.writerow({"username": "alice", "password": "pass1"})
+        provider = DataProvider(csv_dir=tmp_path)
+        assert provider.resolve("{{data.users.username}}") == "alice"
+
+    def test_csv_legacy_still_works(self, tmp_path: Path) -> None:
+        """{{csv.file.col}} legacy syntax still works after refactor."""
+        csv_file = tmp_path / "legacy.csv"
+        with csv_file.open("w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["col1"])
+            writer.writeheader()
+            writer.writerow({"col1": "val1"})
+        provider = DataProvider(csv_dir=tmp_path)
+        assert provider.resolve("{{csv.legacy.col1}}") == "val1"
+
+    def test_data_subdirectory(self, tmp_path: Path) -> None:
+        """{{data.subdir/file.col}} reads from subdirectories (e.g. jmsbr/cost.csv)."""
+        sub_dir = tmp_path / "jmsbr"
+        sub_dir.mkdir()
+        csv_file = sub_dir / "cost.csv"
+        with csv_file.open("w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["waybillId", "weight"])
+            writer.writeheader()
+            writer.writerow({"waybillId": "706134409", "weight": "0.5"})
+        provider = DataProvider(csv_dir=tmp_path)
+        assert provider.resolve("{{data.jmsbr/cost.waybillId}}") == "706134409"
+        assert provider.resolve("{{data.jmsbr/cost.weight}}") == "0.5"
+
+    def test_txt_with_int_cast(self, tmp_path: Path) -> None:
+        """{{int:data.file.value}} casts TXT value to int."""
+        txt_file = tmp_path / "numbers.txt"
+        txt_file.write_text("100\n200\n300\n", encoding="utf-8")
+        provider = DataProvider(csv_dir=tmp_path)
+        result = provider.resolve("{{int:data.numbers.value}}")
+        assert result == 100
+        assert isinstance(result, int)
+
+    def test_txt_loads_from_project_data(self) -> None:
+        """TXT template reads from the loadtest project data/jmsbr/ directory."""
+        provider = DataProvider(csv_dir=Path("data"))
+        result = provider.resolve("{{data.jmsbr/waybill_nos.value}}")
+        assert result == "888700175934187"
+
+    def test_unsupported_extension_raises(self, tmp_path: Path) -> None:
+        """Unsupported file extension raises DataProviderError."""
+        bad_file = tmp_path / "data.xlsx"
+        bad_file.write_text("stuff", encoding="utf-8")
+        provider = DataProvider(csv_dir=tmp_path)
+        with pytest.raises(DataProviderError):
+            provider.resolve("{{data.data.value}}")
+
+    def test_missing_column_in_txt_raises(self, tmp_path: Path) -> None:
+        """TXT files only have 'value' column; other column names raise."""
+        txt_file = tmp_path / "ids.txt"
+        txt_file.write_text("AAA\n", encoding="utf-8")
+        provider = DataProvider(csv_dir=tmp_path)
+        with pytest.raises(DataProviderError):
+            provider.resolve("{{data.ids.wrong_column}}")
+
+
 class TestDataProviderTypeCast:
     """Type-cast prefixes: int:, float:, str:."""
 

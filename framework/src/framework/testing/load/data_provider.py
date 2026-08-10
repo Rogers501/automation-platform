@@ -9,7 +9,10 @@ Supports:
 - {{random.choice(a,b,c)}} -- Random pick from comma-separated values.
 - {{uuid}} -- A random UUID4.
 - {{timestamp}} -- Current Unix timestamp (integer seconds).
-- {{csv.<file>.<column>}} -- Sequential row from a CSV file.
+- {{csv.<file>.<column>}} -- Sequential row from a CSV file (legacy alias).
+- {{data.<file>.<column>}} -- Sequential row from any supported data file.
+  Supports .csv, .txt (single column 'value'), .json (array of objects),
+  .jsonl (JSON Lines, one object per line).
 - {{int:<expr>}} -- Cast any expression result to int (e.g. {{int:csv.users.id}}).
 - {{float:<expr>}} -- Cast any expression result to float.
 
@@ -33,6 +36,7 @@ only the standard library (rule 11).
 from __future__ import annotations
 
 import csv
+import json
 import random
 import re
 import time
@@ -46,9 +50,12 @@ __all__ = ["DataProvider", "DataProviderError", "resolve_templates"]
 
 _TEMPLATE_RE = re.compile(r"\{\{([^}]+)\}\}")
 
-_CSV_DEFAULT_DIR = "data"
+_DATA_DEFAULT_DIR = "data"
 
 _TYPE_CASTS: dict[str, type] = {"int": int, "float": float, "str": str}
+
+# Supported data-source file extensions -> loader methods.
+_DATA_EXTENSIONS = {".csv", ".txt", ".json", ".jsonl"}
 
 
 class DataProviderError(FrameworkError):
@@ -59,7 +66,7 @@ class DataProvider:
     """Resolves {{...}} templates for load-test scenario fields.
 
     Args:
-        csv_dir: Directory containing CSV data files.
+        csv_dir: Directory containing data files (CSV/TXT/JSON/JSONL).
         faker_seed: Optional seed for reproducible Faker output.
         random_seed: Optional seed for reproducible random output.
     """
@@ -71,12 +78,15 @@ class DataProvider:
         faker_seed: int | None = None,
         random_seed: int | None = None,
     ) -> None:
-        self._csv_dir = Path(csv_dir) if csv_dir else Path(_CSV_DEFAULT_DIR)
+        self._data_dir = Path(csv_dir) if csv_dir else Path(_DATA_DEFAULT_DIR)
         self._faker: Any = None
         self._faker_seed = faker_seed
         self._random = random.Random(random_seed) if random_seed else random
-        self._csv_cache: dict[str, list[dict[str, str]]] = {}
-        self._csv_cursor: dict[str, int] = {}
+        self._data_cache: dict[str, list[dict[str, str]]] = {}
+        self._data_cursor: dict[str, int] = {}
+        # Per-resolve row lock: when resolving a single request body, all
+        # data references to the same file should read the same row.
+        self._resolve_locked_rows: dict[str, int] = {}
 
     def _get_faker(self) -> Any:
         """Lazily import and cache the Faker instance."""
@@ -91,13 +101,30 @@ class DataProvider:
         return self._faker
 
     def resolve(self, value: Any) -> Any:
-        """Recursively resolve templates in any value (str/dict/list)."""
+        """Recursively resolve templates in any value (str/dict/list).
+
+        Within a single resolve() call, all data-file references to the
+        same file read the same row (row consistency). The cursor advances
+        only after the top-level resolve completes.
+        """
+        self._resolve_locked_rows.clear()
+        try:
+            result = self._resolve_recursive(value)
+        finally:
+            # Advance cursors for all files locked during this resolve.
+            for file_name in self._resolve_locked_rows:
+                self._data_cursor[file_name] = self._resolve_locked_rows[file_name] + 1
+            self._resolve_locked_rows.clear()
+        return result
+
+    def _resolve_recursive(self, value: Any) -> Any:
+        """Internal recursive resolver (does not clear locked rows)."""
         if isinstance(value, str):
             return self._resolve_string(value)
         if isinstance(value, dict):
-            return {k: self.resolve(v) for k, v in value.items()}
+            return {k: self._resolve_recursive(v) for k, v in value.items()}
         if isinstance(value, list):
-            return [self.resolve(v) for v in value]
+            return [self._resolve_recursive(v) for v in value]
         return value
 
     def _resolve_string(self, text: str) -> Any:
@@ -141,7 +168,10 @@ class DataProvider:
             return self._resolve_random(expr[len("random.") :])
 
         if expr.startswith("csv."):
-            return self._resolve_csv(expr[len("csv.") :])
+            return self._resolve_data(expr[len("csv.") :])
+
+        if expr.startswith("data."):
+            return self._resolve_data(expr[len("data.") :])
 
         raise DataProviderError(f"unknown template expression: {{{{{expr}}}}}")
 
@@ -172,39 +202,95 @@ class DataProvider:
 
         raise DataProviderError(f"unknown random expression: {spec}")
 
-    def _resolve_csv(self, spec: str) -> str:
-        """Resolve a csv.<file>.<column> expression."""
-        parts = spec.split(".")
-        if len(parts) != 2:
-            raise DataProviderError(f"csv expression must be csv.<file>.<column>: {spec}")
-        file_name, column = parts
-        if not file_name.endswith(".csv"):
-            file_name = file_name + ".csv"
+    def _resolve_data(self, spec: str) -> str:
+        """Resolve a data.<file>.<column> or csv.<file>.<column> expression.
 
-        rows = self._load_csv(file_name)
-        if not rows:
-            raise DataProviderError(f"CSV file is empty: {file_name}")
-        if column not in rows[0]:
+        Supports .csv, .txt, .json, .jsonl files. The file extension
+        determines the parsing strategy:
+        - .csv: comma-separated with header row -> dict per row
+        - .txt: one value per line (single column, column name is 'value')
+        - .json: JSON array of objects -> dict per element
+        - .jsonl: JSON Lines (one JSON object per line) -> dict per line
+        """
+        parts = spec.split(".")
+        if len(parts) < 2:
+            raise DataProviderError(f"data expression must be <file>.<column>: {spec}")
+        # The last part is the column name; the rest is the file name
+        # (file names may contain dots, e.g. "users.v2").
+        column = parts[-1]
+        file_name = ".".join(parts[:-1])
+        if "." not in file_name:
+            # No extension specified; try common extensions in order.
+            for ext in _DATA_EXTENSIONS:
+                candidate = f"{file_name}{ext}"
+                if (self._data_dir / candidate).exists():
+                    file_name = candidate
+                    break
+        if "." not in file_name:
             raise DataProviderError(
-                f"column '{column}' not found in {file_name}; available: {list(rows[0].keys())}"
+                f"could not resolve data file: {file_name} (tried extensions: {_DATA_EXTENSIONS})"
             )
 
-        cursor = self._csv_cursor.get(file_name, 0)
+        rows = self._load_data(file_name)
+        if not rows:
+            raise DataProviderError(f"data file is empty: {file_name}")
+        if column not in rows[0]:
+            available = list(rows[0].keys())
+            raise DataProviderError(
+                f"column '{column}' not found in {file_name}; available: {available}"
+            )
+
+        # Row consistency: within a single resolve() call, all references
+        # to the same file read the same row. The cursor advances once at
+        # the end of the resolve (see resolve()).
+        if file_name in self._resolve_locked_rows:
+            cursor = self._resolve_locked_rows[file_name]
+        else:
+            cursor = self._data_cursor.get(file_name, 0)
+            self._resolve_locked_rows[file_name] = cursor
         row = rows[cursor % len(rows)]
-        self._csv_cursor[file_name] = cursor + 1
         return row[column]
 
-    def _load_csv(self, file_name: str) -> list[dict[str, str]]:
-        """Load and cache a CSV file as a list of row dicts."""
-        if file_name in self._csv_cache:
-            return self._csv_cache[file_name]
-        path = self._csv_dir / file_name
+    def _load_data(self, file_name: str) -> list[dict[str, str]]:
+        """Load and cache a data file as a list of row dicts.
+
+        Dispatches on file extension:
+        - .csv  -> csv.DictReader
+        - .txt  -> one value per line, column name 'value'
+        - .json -> JSON array of objects
+        - .jsonl-> JSON Lines (one object per line)
+        """
+        if file_name in self._data_cache:
+            return self._data_cache[file_name]
+        path = self._data_dir / file_name
         if not path.exists():
-            raise DataProviderError(f"CSV file not found: {path}")
-        with path.open("r", encoding="utf-8", newline="") as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
-        self._csv_cache[file_name] = rows
+            raise DataProviderError(f"data file not found: {path}")
+        ext = path.suffix.lower()
+        if ext == ".csv":
+            with path.open("r", encoding="utf-8", newline="") as f:
+                rows = list(csv.DictReader(f))
+        elif ext == ".txt":
+            with path.open("r", encoding="utf-8") as f:
+                rows = [{"value": line.strip()} for line in f if line.strip()]
+        elif ext == ".json":
+            with path.open("r", encoding="utf-8") as f:
+                raw = json.load(f)
+            if not isinstance(raw, list):
+                raise DataProviderError(f"JSON data file must be a list of objects: {file_name}")
+            rows = [{k: str(v) for k, v in item.items()} for item in raw]
+        elif ext == ".jsonl":
+            rows = []
+            with path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        obj = json.loads(line)
+                        rows.append({k: str(v) for k, v in obj.items()})
+        else:
+            raise DataProviderError(
+                f"unsupported data file extension: {ext} (supported: {_DATA_EXTENSIONS})"
+            )
+        self._data_cache[file_name] = rows
         return rows
 
 
