@@ -56,6 +56,7 @@ _TIMELINE_RUNNING = False
 _ASSERTION_RESULTS: list = []
 _TEST_HOST = ""
 _TEST_START_TIME = ""
+_SCENARIO_NAME = ""
 _FIRST_REQUEST_LOGGED = False
 _FIRST_RESPONSE_LOGGED = False
 _FAILURE_LOG_COUNT = 0
@@ -297,6 +298,10 @@ def build_user_class(scenario_file: str) -> type:
 
     scenarios = load_scenarios(scenario_file)
     base_url = _env_base_url()
+
+    # 保存场景名用于报告文件命名
+    global _SCENARIO_NAME
+    _SCENARIO_NAME = Path(scenario_file).stem
     provider = DataProvider(csv_dir=Path("data"))
     _profile, assertions = _load_profile_config()
 
@@ -515,7 +520,13 @@ def _atexit_generate_report() -> None:
         assertions=assertion_results,
     )
 
-    report_path = generate_html_report(data, Path("reports/load_report.html"))
+    # 报告按场景名+时间戳命名, 保留历史报告不覆盖
+    report_dir = Path("reports")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    scenario_label = _SCENARIO_NAME or "loadtest"
+    report_filename = f"{scenario_label}_{timestamp}.html"
+    report_path = generate_html_report(data, report_dir / report_filename)
     logger.info(f"HTML 报告: {report_path.absolute()}")
 
     # 同时挂载到 Allure
