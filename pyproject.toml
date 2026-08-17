@@ -42,7 +42,7 @@ module = "yaml"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["aio_pika", "aio_pika.*", "appium", "appium.*", "redis", "redis.*", "aiokafka", "aiokafka.*", "rocketmq", "rocketmq.*", "playwright", "playwright.*", "selenium", "selenium.*", "faker", "faker.*"]
+module = ["cv2, numpy, aio_pika", "aio_pika.*", "appium", "appium.*", "redis", "redis.*", "aiokafka", "aiokafka.*", "rocketmq", "rocketmq.*", "playwright", "playwright.*", "selenium", "selenium.*", "faker", "faker.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

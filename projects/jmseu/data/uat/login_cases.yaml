@@ -5,5 +5,5 @@ cases:
   - id: normal_admin
     description: 管理员正常登录 (UAT环境)
     username: "01943937"
-    password: "Jt7788521+"
+    password: "Jt202605+"
     remember: true

@@ -1,58 +1,37 @@
-"""Manual captcha handler for jmsco login (human-in-the-loop).
+"""Captcha handler for jmsmx login (auto-solve + manual fallback).
 
-The jmsco login uses a slide-puzzle captcha (拖动下方滑块完成拼图). Automatic
-solving is brittle and risks IP bans, so this handler takes a
-human-in-the-loop approach: the operator completes the slide manually in
-the visible browser, then the script waits for the dashboard's text to
-confirm login success.
+The jmsmx login uses a Tencent slide-puzzle captcha (tencent-captcha-dy).
+Auto-solve via OpenCV gap detection + human-like drag; falls back to
+manual mode if dependencies missing or auto-solve fails.
 
-Only runs in real-browser mode; this project has no CI fake-page test.
+Auto-solve requires: pip install opencv-python-headless numpy
 """
 
 from __future__ import annotations
 
 from loguru import logger
 
+from framework.clients.web.captcha_solver import TencentCaptchaSolver
 from pages.base_page import BasePage
 
 __all__ = ["SlidePuzzleCaptcha"]
 
 
 class SlidePuzzleCaptcha(BasePage):
-    """Manual slide-puzzle captcha handler (human-in-the-loop).
+    """Tencent slide-puzzle captcha handler (auto-solve + manual fallback)."""
 
-    The operator completes the slide in the real browser while the script
-    waits; success is detected by the dashboard text.
-    """
-
-    #: Dashboard text that confirms login success after captcha.
-    SUCCESS_TEXT = "text=功能入口"
+    SUCCESS_TEXT = "text=\u529f\u80fd\u5165\u53e3"
 
     async def solve(self, *, timeout_ms: int = 120000) -> bool:
-        """Wait for manual captcha completion, then confirm login success.
-
-        If login already succeeded without a captcha (URL left `/login`),
-        returns True immediately. Otherwise waits for the operator to
-        complete the slide manually in the visible browser, then detects
-        success by the dashboard text.
-
-        Args:
-            timeout_ms: Max wait for the success text to appear.
-
-        Returns:
-            True if login success detected; False otherwise.
-        """
         page = self.client.page
         if page is None:
             logger.warning("no active page; cannot handle captcha")
             return False
 
-        # Login may have succeeded without a captcha (URL left /login).
         if "/login" not in page.url:
             logger.info("already past login page; no captcha needed")
             return True
 
-        # Brief wait: the login click may redirect without a captcha.
         try:
             await page.wait_for_function(
                 "() => !window.location.pathname.includes('/login')",
@@ -61,15 +40,21 @@ class SlidePuzzleCaptcha(BasePage):
             logger.info("login redirected without captcha; no captcha needed")
             return True
         except Exception:
-            pass  # still on /login; a captcha challenge is likely
+            pass
 
-        logger.info("waiting for manual captcha completion (operator slides in browser)")
+        solver = TencentCaptchaSolver(page)
+        logger.info("attempting automatic captcha solving")
+        solved = await solver.solve(timeout_ms=10000, max_retries=3)
+        if solved:
+            return True
 
-        # Wait for the dashboard success text -- the operator completes the
-        # slide manually; this confirms both captcha solved and login succeeded.
+        logger.warning(
+            "auto-solve failed or unavailable; "
+            "falling back to manual mode (operator slides in browser)"
+        )
         try:
             await page.wait_for_selector(self.SUCCESS_TEXT, timeout=timeout_ms)
-            logger.info("login success detected")
+            logger.info("login success detected (manual)")
             return True
         except Exception:
             logger.warning("login success text not detected; login may have failed")
@@ -77,7 +62,6 @@ class SlidePuzzleCaptcha(BasePage):
             return False
 
     async def _debug_screenshot(self) -> None:
-        """Save a diagnostic screenshot when login success is not detected."""
         page = self.client.page
         if page is None:
             return

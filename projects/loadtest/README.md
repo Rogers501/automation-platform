@@ -97,12 +97,98 @@ loadtest/
 │   │   └── login.yaml
 │   └── uat/
 │       └── login.yaml
-├── reports/                # 压测报告输出目录
-│   └── load_report.html    # HTML 报告 (自动生成)
+├── scripts/
+│   └── fetch_data.py      # 数据源拉取脚本 (生成 CSV/TXT, 从生产运单库拉取)
+├── reports/                # 压测报告输出目录 (按场景名+时间戳命名, 不覆盖)
+│   └── waybill_get_20260810_173025.html
 └── testcase/               # 单元测试
     ├── test_scenario.py    # 场景加载 + 指标计算测试
     └── test_load_engine.py # 压测引擎测试 (LoadProfile/断言/DataProvider)
 ```
+
+## 数据源拉取脚本 (fetch_data.py)
+
+从生产运单库分页查询数据, 提取字段写入 CSV/TXT, 供压测场景使用.
+
+### 快速开始
+
+```powershell
+cd projects/loadtest
+
+# 先查看接口返回结构 (推荐, 确认字段名和数据量)
+python scripts/fetch_data.py --inspect
+
+# 拉 50 万条 CSV (供 comCostAndWeight 算费接口)
+python scripts/fetch_data.py --count 500000
+
+# 拉 200 万条 CSV
+python scripts/fetch_data.py --count 2000000
+
+# 拉运单号 TXT (供 waybill_get / waybill_query 使用)
+python scripts/fetch_data.py --waybill-nos --count 500000
+
+# 按页数拉 (每页 10000 条)
+python scripts/fetch_data.py --pages 500
+
+# 指定时间范围
+python scripts/fetch_data.py --count 500000 --start-time "2026-01-01 00:00:00" --end-time "2026-08-01 00:00:00"
+```
+
+### 参数说明
+
+| 参数 | 说明 | 默认值 |
+| --- | --- | --- |
+| `--count N` | 拉 N 条, 自动计算页数 (优先于 `--pages`) | 0 (不限制) |
+| `--pages N` | 拉 N 页, 每页 10000 条 | 1000 |
+| `--start-time` | 查询起始时间 | 2026-05-31 08:00:00 |
+| `--end-time` | 查询结束时间 | 2026-05-31 22:00:00 |
+| `--output` | CSV 输出路径 | data/jmsbr/cost_data.csv |
+| `--waybill-nos` | 生成 TXT (每行一个运单号), 不加则生成 CSV | -- |
+| `--waybill-nos-output` | TXT 输出路径 | data/jmsbr/waybill_nos_fetched.txt |
+| `--inspect` | 只拉第一页, 打印字段结构 | -- |
+
+### 字段映射表
+
+数据源接口响应字段 -> CSV 列名 -> 压测请求字段:
+
+| 数据源响应字段 | CSV 列名 | 压测请求字段 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `waybillId` | waybillId | 运单表 ID |
+| `pickNetworkCode` | `startPointNetworkCode` | startPointNetworkCode | 寄件网点编码 |
+| `pickNetworkCode` | `startNetworkCode` | startNetworkCode | 寄件网点编码 (同上, 取同一个值) |
+| `receiverPostalCode` | `terminalPostalCode` | terminalPostalCode | 收件邮编 |
+| `expressTypeCode` | `productTypeCode` | productTypeCode | 产品类型 Code |
+| `goodsTypeId` | `goodsTypeId` | goodsTypeId | 物品类型 ID |
+| `goodsTypeCode` | `goodsTypeCode` | goodsTypeCode | 物品类型 Code |
+| `sendCode` | `serviceMethodCode` | serviceMethodCode | 寄件服务方式 |
+| `packageChargeWeight` | `number` | number | 包裹计费重量 |
+| `inputTime` | `currentTime` | currentTime | 录入时间 |
+| `insuredAmount` | `insuredAmount` | insuredAmount | 报价金额 |
+
+> **固定值不在 CSV 中**: `productTypeId=100`, `customerId=7178`, `smMode=2` 直接在 JMeter/Locust 请求配置中写死, 改固定值时无需重新生成数据源文件.
+
+### 文件不覆盖
+
+多次生成数据文件时, 同名文件自动加序号后缀:
+```
+第一次: data/jmsbr/cost_data.csv
+第二次: data/jmsbr/cost_data_1.csv
+第三次: data/jmsbr/cost_data_2.csv
+```
+
+### 并发与空页停止
+
+- 并发模式: 每批 40 页并发拉取 (MAX_CONCURRENT=20), 全部返回后写入文件
+- 整批全空 (40 页都返回 0 条) 立即停止, 不再空转
+- 每批日志显示: 返回条数、写入条数、空页数、累计条数
+- 结束时校验文件行数与 total 是否一致, 不一致打印警告
+
+### CSV 同时兼容 Locust 和 JMeter
+
+| 工具 | 引用方式 | 示例 |
+| --- | --- | --- |
+| Locust (本项目) | `{{data.jmsbr/cost_data.<列名>}}` | `{{data.jmsbr/cost_data.waybillId}}` |
+| JMeter | `${<列名>}` (CSV Data Set Config) | `${waybillId}` |
 
 ## 数据驱动 (Data Provider)
 
@@ -261,7 +347,12 @@ QPS = 200 / 0.332 = 602 QPS
 
 ## HTML 报告
 
-压测结束后自动生成 `reports/load_report.html`, 包含:
+压测结束后自动生成 HTML 报告, 按场景名+时间戳命名 (不覆盖历史报告):
+```
+reports/waybill_get_20260810_173025.html
+reports/waybill_query_20260810_174501.html
+```
+报告包含:
 - 统计表 (请求数、失败数、平均/最小/最大/中位数延迟、RPS、错误率)
 - 延迟分位数表 (P50/P66/P75/P80/P90/P95/P98/P99/P99.9/P99.99)
 - SVG 时间序列图表 (活跃用户数、RPS、平均延迟、错误率)

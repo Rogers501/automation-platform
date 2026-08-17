@@ -2,7 +2,7 @@
 
 - BasePage: 封装 WebClient 通用操作, 所有页面对象继承它 (rule 4/8).
 - LoginPage: 登录页选择器与操作.
-- SlidePuzzleCaptcha: 滑块验证码处理器 (人工滑动).
+- SlidePuzzleCaptcha: 滑块验证码处理器 (自动求解+人工失实).
 """
 
 from pages.base_page import BasePage

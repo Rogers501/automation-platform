@@ -145,6 +145,8 @@ Windows 无 make 时直接使用 `uv run ...` 命令。
 | `AI_RULES.md` | 16 条开发红线(不可违反) | AI 助手 + 开发者 |
 | `AGENTS.md` | 任务执行规范(会话启动/探索/留痕) | AI 助手 |
 | `docs/架构设计.md` | 概要设计 + 详细设计(架构/分层/模块/扩展点) | 测试开发 |
+| `docs/概要设计文档.md` | 概要设计文档模板(通用,软件工程规范,含时序图/流程图/部署图) | 测试开发 |
+| `docs/详细设计文档.md` | 详细设计文档模板(通用,软件工程规范,含类图/时序图/状态图/异常处理) | 测试开发 |
 | `docs/快速上手.md` | 从 0 到第一个用例(30 分钟) | 新人 |
 | `docs/用户手册.md` | 完整操作手册(配置/运行/扩展/维护) | 使用者 |
 | `docs/协作留痕.docx` | 架构开发留痕(对话累积) | AI 助手 + 开发者 |
@@ -162,7 +164,7 @@ Windows 无 make 时直接使用 `uv run ...` 命令。
 | 3 | 数据驱动 + 接口依赖（datadriven / dependency DAG / variables） | 完成 |
 | 4 | DB / Cache / MQ（Kafka + RabbitMQ + RocketMQ 三端） | 完成 |
 | 5 | 并发执行（pytest-xdist）+ Allure 报告（attach/labels/environment/categories） | 完成 |
-| 6 | Web/App 扩展（Playwright WebClient + Appium AppClient） | 完成 |
+| 6 | Web/App 扩展（Playwright WebClient + Appium AppClient） | 完成 | (含腾讯滑块验证码自动求解器 TencentCaptchaSolver: OpenCV 缺口检测 + 人类轨迹模拟)
 | 7 | CI/CD + Docker（GitLab CI / Jenkins / Dockerfile / docker-compose） | 完成 |
 | 8 | AI 失败分析（FailureAnalyzer ABC + NullAnalyzer + LLMAnalyzer） | 完成 |
 | 9 | 集成验证 + Allure 报告增强 + 文档同步 | 完成 |

@@ -1,43 +1,41 @@
-"""Manual captcha handler for jmseu login (human-in-the-loop).
+"""Captcha handler for jmseu login (auto-solve + manual fallback).
 
-The jmseu login uses a slide-puzzle captcha (tencent-captcha-dy). Automatic
-solving is brittle and risks IP bans, so this handler takes a
-human-in-the-loop approach: the operator completes the slide manually in
-the visible browser, then the script waits for the dashboard's text to
-confirm login success.
+The jmseu login uses a Tencent slide-puzzle captcha (tencent-captcha-dy).
+This handler first attempts automatic solving via OpenCV gap detection
+and human-like mouse trajectory. If auto-solve is unavailable (missing
+dependencies) or fails, it falls back to manual mode: the operator
+completes the slide in the visible browser.
 
-Only runs in real-browser mode; this project has no CI fake-page test.
+Auto-solve requires: pip install opencv-python-headless numpy
 """
 
 from __future__ import annotations
 
 from loguru import logger
 
+from framework.clients.web.captcha_solver import TencentCaptchaSolver
 from pages.base_page import BasePage
 
 __all__ = ["TencentSliderCaptcha"]
 
 
 class TencentSliderCaptcha(BasePage):
-    """Manual slide-captcha handler (human-in-the-loop).
+    """Tencent slide-captcha handler (auto-solve + manual fallback).
 
-    The operator completes the slide in the real browser while the script
-    waits; success is detected by the dashboard text.
+    Tries automatic solving first; falls back to manual if:
+      - opencv/numpy not installed
+      - gap detection fails
+      - auto-solve attempts exhausted
     """
 
-    #: Dashboard text that confirms login success after captcha.
-    SUCCESS_TEXT = "text=功能入口"
+    #: Dashboard text confirming login success after captcha.
+    SUCCESS_TEXT = "text=\u529f\u80fd\u5165\u53e3"
 
     async def solve(self, *, timeout_ms: int = 120000) -> bool:
-        """Wait for manual captcha completion, then confirm login success.
-
-        If login already succeeded without a captcha (URL left ``/login``),
-        returns True immediately. Otherwise waits for the operator to
-        complete the slide manually in the visible browser, then detects
-        success by the dashboard text.
+        """Attempt auto-solve, fall back to manual if needed.
 
         Args:
-            timeout_ms: Max wait for the success text to appear.
+            timeout_ms: Max wait for success text (manual fallback).
 
         Returns:
             True if login success detected; False otherwise.
@@ -47,12 +45,12 @@ class TencentSliderCaptcha(BasePage):
             logger.warning("no active page; cannot handle captcha")
             return False
 
-        # Login may have succeeded without a captcha (URL left /login).
+        # Login may have succeeded without captcha.
         if "/login" not in page.url:
             logger.info("already past login page; no captcha needed")
             return True
 
-        # Brief wait: the login click may redirect without a captcha.
+        # Brief wait: login click may redirect without captcha.
         try:
             await page.wait_for_function(
                 "() => !window.location.pathname.includes('/login')",
@@ -61,15 +59,23 @@ class TencentSliderCaptcha(BasePage):
             logger.info("login redirected without captcha; no captcha needed")
             return True
         except Exception:
-            pass  # still on /login; a captcha challenge is likely
+            pass  # still on /login; captcha challenge likely
 
-        logger.info("waiting for manual captcha completion (operator slides in browser)")
+        # --- Attempt automatic solving ---
+        solver = TencentCaptchaSolver(page)
+        logger.info("attempting automatic captcha solving")
+        solved = await solver.solve(timeout_ms=10000, max_retries=3)
+        if solved:
+            return True
 
-        # Wait for the dashboard success text -- the operator completes the
-        # slide manually; this confirms both captcha solved and login succeeded.
+        # --- Fall back to manual mode ---
+        logger.warning(
+            "auto-solve failed or unavailable; "
+            "falling back to manual mode (operator slides in browser)"
+        )
         try:
             await page.wait_for_selector(self.SUCCESS_TEXT, timeout=timeout_ms)
-            logger.info("login success detected")
+            logger.info("login success detected (manual)")
             return True
         except Exception:
             logger.warning("login success text not detected; login may have failed")

@@ -19,14 +19,25 @@
 #   serviceMethodCode      -- 寄件服务方式, 固定写 "01"
 #   number                 -- 包裹计费重量 (浮点数), 从数据源文件读取
 #   currentTime            -- 录入时间, 从数据源文件读取
-#   customerId             -- 客户 ID, 固定写 1965 (研发提供)
+#   customerId             -- 客户 ID, 固定写 7178 (研发提供)
 #   smMode                 -- 结算方式, 固定写 2
 #   insuredAmount          -- 报价金额 (浮点数), 从数据源文件读取
 #   startNetworkCode       -- 寄件网点编码, 从数据源文件读取
 #
 # 数据源文件 (CSV 格式, 每行一条记录, 顺序读取循环):
 #   data/jmsbr/cost_data.csv  -- 算费数据来源 (百万级)
-#   字段: waybillId, startPointNetworkCode, terminalPostalCode, productTypeId, ...
+#   字段对应关系 (数据源响应 -> CSV列名 -> 压测请求字段):
+#     id -> waybillId -> waybillId
+#     pickNetworkCode -> startPointNetworkCode / startNetworkCode (同一值)
+#     receiverPostalCode -> terminalPostalCode
+#     expressTypeCode -> productTypeCode
+#     goodsTypeId -> goodsTypeId
+#     goodsTypeCode -> goodsTypeCode
+#     sendCode -> serviceMethodCode (固定写01)
+#     packageChargeWeight -> number
+#     inputTime -> currentTime
+#     insuredAmount -> insuredAmount
+#     (固定值) productTypeId=100, customerId=7178, smMode=2
 #
 # 数据驱动机制:
 #   {{data.jmsbr/cost_data.waybillId}}              -- 从 cost_data.csv 读取 waybillId 列
@@ -68,10 +79,10 @@ scenarios:
           productTypeCode: "{{data.jmsbr/cost_data.productTypeCode}}"
           goodsTypeId: "{{int:data.jmsbr/cost_data.goodsTypeId}}"
           goodsTypeCode: "{{data.jmsbr/cost_data.goodsTypeCode}}"
-          serviceMethodCode: "01"
+          serviceMethodCode: "{{data.jmsbr/cost_data.serviceMethodCode}}"
           number: "{{float:data.jmsbr/cost_data.number}}"
           currentTime: "{{data.jmsbr/cost_data.currentTime}}"
-          customerId: 1965
+          customerId: 7178
           smMode: 2
           insuredAmount: "{{float:data.jmsbr/cost_data.insuredAmount}}"
           startNetworkCode: "{{data.jmsbr/cost_data.startNetworkCode}}"

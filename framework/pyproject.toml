@@ -13,6 +13,8 @@ dependencies = [
     "redis>=5.0",
     "aiokafka>=0.11",
     "jsonschema>=4.0",
+    "opencv-python-headless>=4.8",
+    "numpy>=1.26",
 ]
 
 [build-system]
