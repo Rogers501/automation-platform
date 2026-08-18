@@ -8,6 +8,7 @@ build/
 dist/
 *.egg-info/
 *.egg
+node_modules/
 
 # Virtual environments
 .venv/
@@ -51,4 +52,7 @@ allure-report/
 
 # Debug screenshots
 captcha_debug_*.png
+
+# Generated load-test datasets (regenerate with projects/loadtest/scripts/fetch_data.py)
+projects/loadtest/data/jmsbr/cost_data*.csv
 
