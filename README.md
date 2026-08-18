@@ -33,6 +33,8 @@ automation-platform/
 │       │   └── ai/             # AI 失败分析（FailureAnalyzer + LLMAnalyzer，已集成）
 │       └── utils/              # 通用工具
 ├── projects/                    # 业务系统测试工程（template 模板，oms/wms/tms + jms 系列）
+├── server/                      # 测试管理平台后端（FastAPI + pytest 执行器）
+├── frontend/                    # 测试管理平台前端（Vue 3 + Element Plus）
 ├── config/envs/                # 全局环境配置
 ├── docker/                     # Dockerfile 与本地依赖编排
 │   ├── Dockerfile
@@ -149,6 +151,7 @@ Windows 无 make 时直接使用 `uv run ...` 命令。
 | `docs/详细设计文档.md` | 详细设计文档模板(通用,软件工程规范,含类图/时序图/状态图/异常处理) | 测试开发 |
 | `docs/快速上手.md` | 从 0 到第一个用例(30 分钟) | 新人 |
 | `docs/用户手册.md` | 完整操作手册(配置/运行/扩展/维护) | 使用者 |
+| `docs/测试管理平台技术方案.md` | 测试管理平台架构、流程、运行方式与演进规划 | 测试开发 + 使用者 |
 | `docs/协作留痕.docx` | 架构开发留痕(对话累积) | AI 助手 + 开发者 |
 | `docs/业务留痕-<国家>.docx` | 各国业务测试留痕 | AI 助手 + 开发者 |
 | `方案.docx` | 平台搭建教程(外部视角,参考用) | 参考 |
@@ -169,10 +172,31 @@ Windows 无 make 时直接使用 `uv run ...` 命令。
 | 8 | AI 失败分析（FailureAnalyzer ABC + NullAnalyzer + LLMAnalyzer） | 完成 |
 | 9 | 集成验证 + Allure 报告增强 + 文档同步 | 完成 |
 | 10 | 数据生命周期 + AI用例生成 + 邮件通知/Allure历史 + 业务系统脚手架(oms/wms/tms) | 完成 |
+| 11 | 接口压测引擎（Locust + YAML 场景 + 数据驱动 + SLA + HTML 报告） | 完成 |
+| 12 | 数据源拉取脚本（生产运单库分页查询 -> CSV/TXT） | 完成 |
+| 13 | 测试管理平台（FastAPI + Vue 3：查用例 / 跑用例 / 看报告） | 完成 |
 
 原始 16 项目标全部功能实现。
 
 ## 设计决策（已确认）
+
+### 测试管理平台
+
+面向不写代码的测试人员，提供项目查询、用例查询、测试执行、报告查看四个入口。
+
+```powershell
+# 首次使用先安装依赖
+.\.venv\Scripts\python.exe -m pip install -r server/requirements.txt
+cd frontend; npm install
+
+# 终端 1 启动后端
+powershell -ExecutionPolicy Bypass -File scripts/start_backend.ps1
+
+# 终端 2 启动前端
+powershell -ExecutionPolicy Bypass -File scripts/start_frontend.ps1
+```
+
+访问 http://localhost:5173，接口文档 http://localhost:8900/docs。
 
 - 依赖管理：uv
 - 优先级：API 优先（已完成闭环），Web/App 已实现（Playwright + Appium）
