@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from .scanner import ROOT
 
 
-def parse_project_results(project: str) -> dict:
+def parse_project_results(project: str) -> dict[str, Any]:
     """解析项目最近的 Allure 结果.
 
     Returns:
@@ -17,7 +18,7 @@ def parse_project_results(project: str) -> dict:
     if not results_dir.exists():
         return {"total": 0, "passed": 0, "failed": 0, "broken": 0, "skipped": 0, "cases": []}
 
-    cases = []
+    cases: list[dict[str, Any]] = []
     for f in sorted(results_dir.glob("*.json")):
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -44,7 +45,7 @@ def parse_project_results(project: str) -> dict:
             }
         )
 
-    stats = {
+    stats: dict[str, Any] = {
         "total": len(cases),
         "passed": sum(1 for c in cases if c["status"] == "passed"),
         "failed": sum(1 for c in cases if c["status"] == "failed"),

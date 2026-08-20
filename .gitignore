@@ -56,3 +56,8 @@ captcha_debug_*.png
 # Generated load-test datasets (regenerate with projects/loadtest/scripts/fetch_data.py)
 projects/loadtest/data/jmsbr/cost_data*.csv
 
+# Local MySQL server data and offline Docker artifacts
+data/mysql/
+data/backups/
+data/docker-images/
+

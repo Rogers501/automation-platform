@@ -185,6 +185,9 @@ Windows 无 make 时直接使用 `uv run ...` 命令。
 面向不写代码的测试人员，提供项目查询、用例查询、测试执行、报告查看四个入口。
 
 ```powershell
+# 可选：启动本地 MySQL（首次会拉取镜像）
+docker compose -f docker/docker-compose.yml up -d mysql
+
 # 首次使用先安装依赖
 .\.venv\Scripts\python.exe -m pip install -r server/requirements.txt
 cd frontend; npm install
@@ -196,7 +199,36 @@ powershell -ExecutionPolicy Bypass -File scripts/start_backend.ps1
 powershell -ExecutionPolicy Bypass -File scripts/start_frontend.ps1
 ```
 
+或一键启动（MySQL 容器 + 后端 + 前端，单终端）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1
+```
+
+脚本内部自动加载/导出 MySQL 离线镜像、启动容器并等待健康检查、启动后端并轮询 `/api/health`、启动前端 Vite。脚本头部强制 `chcp 65001` + UTF-8 输出，避免中文乱码。
+
 访问 http://localhost:5173，接口文档 http://localhost:8900/docs。
+
+### MySQL 数据持久化
+
+MySQL 数据目录绑定在项目本地 `data/mysql/`，Docker Desktop 更新、卸载或容器重建都不会删除该目录。定期备份执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/backup_mysql.ps1
+```
+
+恢复备份：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/restore_mysql.ps1 -BackupFile data\backups\<backup.sql>
+```
+
+如需防止 Docker 镜像丢失，可导出离线镜像（文件在 `data/docker-images/`，不入 Git）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/save_mysql_image.ps1
+docker load -i data\docker-images\mysql-8.4.tar
+```
 
 - 依赖管理：uv
 - 优先级：API 优先（已完成闭环），Web/App 已实现（Playwright + Appium）

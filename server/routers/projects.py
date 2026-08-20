@@ -1,20 +1,30 @@
 """项目管理路由: 项目列表 / 项目详情."""
 
-from fastapi import APIRouter, HTTPException
+from typing import Any
 
+from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import SQLAlchemyError
+
+from ..db import session_factory, sync_projects
 from ..services.scanner import scan_projects, scan_test_files
 
 router = APIRouter()
 
 
 @router.get("/projects")
-async def list_projects() -> list[dict]:
+async def list_projects() -> list[dict[str, Any]]:
     """获取所有测试项目列表."""
-    return scan_projects()
+    projects = scan_projects()
+    try:
+        async with session_factory()() as session:
+            await sync_projects(session, projects)
+    except (RuntimeError, SQLAlchemyError):
+        pass
+    return projects
 
 
 @router.get("/projects/{project_name}")
-async def get_project(project_name: str) -> dict:
+async def get_project(project_name: str) -> dict[str, Any]:
     """获取项目详情 (包含测试文件列表)."""
     projects = scan_projects()
     for p in projects:

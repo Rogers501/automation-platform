@@ -4,15 +4,17 @@
 services:
   mysql:
     image: mysql:8.4
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpw
-      MYSQL_DATABASE: automation
-      MYSQL_USER: tester
-      MYSQL_PASSWORD: testerpw
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpw}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-automation}
+      MYSQL_USER: ${MYSQL_USER:-tester}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-testerpw}
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      # Bind to the repository so Docker Desktop reinstalls do not remove data.
+      - ../data/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -prootpw"]
       interval: 10s
@@ -52,6 +54,5 @@ services:
       retries: 10
 
 volumes:
-  mysql_data:
   redis_data:
   kafka_data:

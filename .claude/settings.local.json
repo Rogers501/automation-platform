@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; chcp 65001 | Out-Null; & .\\\\scripts\\\\start_all.ps1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command '[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; $tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile\\('\\\\''C:\\\\work\\\\PythonProject\\\\automation-platform\\\\scripts\\\\start_all.ps1'\\\\'', [ref]$tokens, [ref]$errors\\) | Out-Null; if \\($errors\\) { $errors | ForEach-Object { Write-Host $_.Extent.StartLineNumber '\\\\'':'\\\\'' $_.Message } } else { Write-Host '\\\\''OK: no parse errors'\\\\'' }')",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/parse_check.ps1)",
+      "Bash(powershell -ExecutionPolicy Bypass -Command '& { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8; $errs = @\\(\\); $null = [System.Management.Automation.Language.Parser]::ParseFile\\(\\(Resolve-Path '\\\\''scripts\\\\start_all.ps1'\\\\''\\).Path, [ref]$null, [ref]$errs\\); if \\($errs.Count -eq 0\\) { '\\\\''OK'\\\\'' } else { $errs | ForEach-Object { '\\\\''{0}: {1}'\\\\'' -f $_.Extent.StartLineNumber, $_.Message } } }')",
+      "Bash(powershell -ExecutionPolicy Bypass -Command '$p='\\\\''C:\\\\work\\\\PythonProject\\\\automation-platform\\\\scripts\\\\start_all.ps1'\\\\''; $c=[System.IO.File]::ReadAllText\\($p, [System.Text.UTF8Encoding]::new\\($false\\)\\); $b=[System.Text.Encoding]::UTF8.GetPreamble\\(\\); [System.IO.File]::WriteAllBytes\\($p, $b + [System.Text.UTF8Encoding]::new\\($false\\).GetBytes\\($c\\)\\); Write-Host '\\\\''BOM added'\\\\''')",
+      "Bash(powershell -ExecutionPolicy Bypass -Command '$errs=$null; $null=[System.Management.Automation.Language.Parser]::ParseFile\\('\\\\''C:\\\\work\\\\PythonProject\\\\automation-platform\\\\scripts\\\\start_all.ps1'\\\\'',[ref]$null,[ref]$errs\\); if\\($errs.Count -eq 0\\){'\\\\''OK: no parse errors'\\\\''}else{$errs|%{'\\\\''{0}: {1}'\\\\'' -f $_.Extent.StartLineNumber,$_.Message}}')",
+      "Bash(powershell -ExecutionPolicy Bypass -File .\\\\scripts\\\\start_all.ps1)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1)",
+      "Bash(powershell *)",
+      "Bash(docker stop *)",
+      "Bash(docker rm *)",
+      "Bash(python -c ' *)",
+      "Bash(.venv/Scripts/python.exe -m pip install python-docx -q)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python.exe -X utf8 append_trace_63.py)",
+      "Bash(.venv/Scripts/python.exe -X utf8 -c ' *)"
+    ]
+  }
+}

@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 #: 平台根目录 (server/ 的上一级).
 ROOT = Path(__file__).resolve().parents[2]
@@ -21,13 +22,13 @@ PROJECTS_DIR = ROOT / "projects"
 SKIP_DIRS = {"template", "__pycache__", ".pytest_cache", ".mypy_cache", "node_modules"}
 
 
-def scan_projects() -> list[dict]:
+def scan_projects() -> list[dict[str, Any]]:
     """扫描所有测试项目, 返回项目列表.
 
     Returns:
         项目列表, 每项包含: name(项目名), description(描述), envs(环境列表), case_count(用例数)
     """
-    projects = []
+    projects: list[dict[str, Any]] = []
     if not PROJECTS_DIR.exists():
         return projects
 
@@ -37,7 +38,7 @@ def scan_projects() -> list[dict]:
         if not (pdir / "pytest.ini").exists() and not (pdir / "pyproject.toml").exists():
             continue
 
-        info: dict = {
+        info: dict[str, Any] = {
             "name": pdir.name,
             "description": _read_description(pdir),
             "envs": _scan_envs(pdir),
@@ -81,13 +82,13 @@ def _count_cases(pdir: Path) -> int:
     return len(list(tc_dir.rglob("test_*.py")))
 
 
-def scan_test_files(project_name: str) -> list[dict]:
+def scan_test_files(project_name: str) -> list[dict[str, Any]]:
     """扫描项目下所有测试文件, 返回文件信息列表."""
     pdir = get_project_path(project_name)
     if not pdir:
         return []
 
-    files = []
+    files: list[dict[str, str]] = []
     tc_dir = pdir / "testcase"
     if tc_dir.exists():
         for f in sorted(tc_dir.rglob("test_*.py")):

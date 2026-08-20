@@ -16,6 +16,9 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from ..db import save_execution, session_factory
 from .scanner import ROOT
 
 #: Python 解释器路径 (项目 venv).
@@ -25,10 +28,10 @@ PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 _running: dict[str, dict[str, Any]] = {}
 
 #: WebSocket 订阅者 (execution_id -> callback).
-_subscribers: dict[str, list] = {}
+_subscribers: dict[str, list[Any]] = {}
 
 
-def create_execution(project: str, env: str, test_paths: list[str]) -> str:
+async def create_execution(project: str, env: str, test_paths: list[str]) -> str:
     """创建一次测试执行, 返回 execution_id."""
     execution_id = str(uuid.uuid4())[:8]
     _running[execution_id] = {
@@ -40,6 +43,7 @@ def create_execution(project: str, env: str, test_paths: list[str]) -> str:
         "started_at": datetime.now().isoformat(),
         "output_lines": [],
     }
+    await _persist(execution_id)
     return execution_id
 
 
@@ -50,6 +54,7 @@ async def run_execution(execution_id: str) -> None:
         return
 
     task["status"] = "running"
+    await _persist(execution_id)
     project_dir = ROOT / "projects" / task["project"]
 
     cmd = [
@@ -82,6 +87,7 @@ async def run_execution(execution_id: str) -> None:
     await proc.wait()
     task["status"] = "passed" if proc.returncode == 0 else "failed"
     task["finished_at"] = datetime.now().isoformat()
+    await _persist(execution_id)
     await _notify(
         execution_id,
         {
@@ -92,12 +98,12 @@ async def run_execution(execution_id: str) -> None:
     )
 
 
-def get_execution(execution_id: str) -> dict | None:
+def get_execution(execution_id: str) -> dict[str, Any] | None:
     """获取执行状态."""
     return _running.get(execution_id)
 
 
-def list_executions() -> list[dict]:
+def list_executions() -> list[dict[str, Any]]:
     """列出所有执行记录."""
     return sorted(_running.values(), key=lambda x: x["started_at"], reverse=True)
 
@@ -107,7 +113,19 @@ async def subscribe(execution_id: str, callback: Any) -> None:
     _subscribers.setdefault(execution_id, []).append(callback)
 
 
-async def _notify(execution_id: str, message: dict) -> None:
+async def _persist(execution_id: str) -> None:
+    """Persist an execution snapshot while keeping in-memory execution usable."""
+    task = _running.get(execution_id)
+    if not task:
+        return
+    try:
+        async with session_factory()() as session:
+            await save_execution(session, task)
+    except (RuntimeError, SQLAlchemyError):
+        return
+
+
+async def _notify(execution_id: str, message: dict[str, Any]) -> None:
     """通知所有订阅者."""
     for cb in _subscribers.get(execution_id, []):
         with contextlib.suppress(Exception):

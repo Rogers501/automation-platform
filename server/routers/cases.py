@@ -3,17 +3,20 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
+from ..db import session_factory, sync_cases
 from ..services.scanner import get_project_path, scan_test_files
 
 router = APIRouter()
 
 
 @router.get("/projects/{project_name}/cases")
-async def list_cases(project_name: str, env: str = "test") -> dict:
+async def list_cases(project_name: str, env: str = "test") -> dict[str, Any]:
     """获取项目的测试用例列表.
 
     扫描 testcase/ 目录下的测试文件, 解析 docstring 中的用例描述.
@@ -23,7 +26,7 @@ async def list_cases(project_name: str, env: str = "test") -> dict:
     if not pdir:
         raise HTTPException(status_code=404, detail=f"项目 {project_name} 不存在")
 
-    cases = []
+    cases: list[dict[str, Any]] = []
     test_files = scan_test_files(project_name)
 
     for tf in test_files:
@@ -51,6 +54,11 @@ async def list_cases(project_name: str, env: str = "test") -> dict:
             }
             cases.append(case)
 
+    try:
+        async with session_factory()() as session:
+            await sync_cases(session, project_name, cases)
+    except (RuntimeError, SQLAlchemyError):
+        pass
     return {"project": project_name, "env": env, "total": len(cases), "cases": cases}
 
 
@@ -92,13 +100,13 @@ def _extract_tags(content: str) -> list[str]:
     return list(set(re.findall(r"pytest\.mark\.(\w+)", content)))
 
 
-def _load_data_cases(pdir: Path, env: str, test_file: str) -> list[dict]:
+def _load_data_cases(pdir: Path, env: str, test_file: str) -> list[dict[str, Any]]:
     """加载数据驱动的用例参数."""
     data_dir = pdir / "data" / env
     if not data_dir.exists():
         return []
 
-    cases = []
+    cases: list[dict[str, Any]] = []
     for yml in data_dir.glob("*.yaml"):
         try:
             data = yaml.safe_load(yml.read_text(encoding="utf-8"))
