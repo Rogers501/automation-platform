@@ -81,20 +81,32 @@ while ($true) {
 Write-Host ">>> MySQL 容器已健康 ✅" -ForegroundColor Green
 
 # -------------------------------------------------
-# 4️⃣ 启动后端 FastAPI (uvicorn)
+# 4️⃣ 启动后端 FastAPI (uvicorn) - 后台进程,脚本退出时清理
 # -------------------------------------------------
 Write-Host ">>> 启动后端 FastAPI (端口 8900) ..." -ForegroundColor Yellow
-# 这里用 Start-Job 把 uvicorn 放后台，避免阻塞脚本
-$BackendJob = Start-Job -ScriptBlock {
-    param($Root)
-    Set-Location $Root
-    & "$Root\.venv\Scripts\python.exe" -m uvicorn server.main:app --host 127.0.0.1 --port 8900
-} -ArgumentList $ProjectRoot
+
+$PythonExe = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
+if (-not (Test-Path $PythonExe)) {
+    Write-Error "未找到虚拟环境 Python: $PythonExe"
+    exit 1
+}
+
+# 用 Start-Process 启动独立进程(不绑定 PowerShell Job 生命周期),
+# 脚本前台等待 Ctrl+C 后通过 trap 清理子进程
+$BackendProcess = Start-Process -FilePath $PythonExe `
+    -ArgumentList "-m", "uvicorn", "server.main:app", "--host", "127.0.0.1", "--port", "8900" `
+    -WorkingDirectory $ProjectRoot `
+    -NoNewWindow `
+    -PassThru
 
 # 等待后端 /api/health 返回 database: connected（最多 30 秒）
 Write-Host ">>> 等待后端 API 就绪 ..." -ForegroundColor Yellow
 $ApiReady = $false
 for ($i = 0; $i -lt 30; $i++) {
+    if ($BackendProcess.HasExited) {
+        Write-Error "后端进程异常退出 (ExitCode=$($BackendProcess.ExitCode))"
+        exit 1
+    }
     try {
         $Health = Invoke-RestMethod -Uri 'http://127.0.0.1:8900/api/health' -TimeoutSec 2 -ErrorAction Stop
         if ($Health.database -eq 'connected') { $ApiReady = $true; break }
@@ -102,33 +114,83 @@ for ($i = 0; $i -lt 30; $i++) {
     Start-Sleep -Seconds 1
 }
 if (-not $ApiReady) {
-    Write-Error "后端 API 启动超时，请检查后台任务日志 (Receive-Job -Id $($BackendJob.Id))"
+    Write-Error "后端 API 启动超时，请直接运行 scripts/start_backend.ps1 查看报错"
+    if (-not $BackendProcess.HasExited) { Stop-Process -Id $BackendProcess.Id -Force }
     exit 1
 }
 Write-Host ">>> 后端 API 已就绪 (database=connected)" -ForegroundColor Green
 
 # -------------------------------------------------
-# 5️⃣ 启动前端 Vite (npm run dev)
+# 5️⃣ 启动前端 Vite (npm run dev) - 后台进程
 # -------------------------------------------------
 Write-Host ">>> 启动前端 Vite (端口 5173) ..." -ForegroundColor Yellow
-$FrontendJob = Start-Job -ScriptBlock {
-    param($Root)
-    Set-Location (Join-Path $Root 'frontend')
-    if (-not (Test-Path 'node_modules')) { npm install | Out-Null }
-    npm run dev
-} -ArgumentList $ProjectRoot
+$FrontendDir = Join-Path $ProjectRoot "frontend"
+if (-not (Test-Path (Join-Path $FrontendDir "node_modules"))) {
+    Write-Host ">>> 首次运行，安装前端依赖 ..." -ForegroundColor Yellow
+    Push-Location $FrontendDir
+    try { npm install } finally { Pop-Location }
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "前端依赖安装失败"
+        if (-not $BackendProcess.HasExited) { Stop-Process -Id $BackendProcess.Id -Force }
+        exit $LASTEXITCODE
+    }
+}
 
-# 给前端几秒钟编译时间
-Start-Sleep -Seconds 5
+$FrontendProcess = Start-Process -FilePath "npm.cmd" `
+    -ArgumentList "run", "dev", "--", "--port", "5173" `
+    -WorkingDirectory $FrontendDir `
+    -NoNewWindow `
+    -PassThru
+
+# 轮询前端端口是否监听（最多 40 秒）
+Write-Host ">>> 等待前端 Vite 编译完成 ..." -ForegroundColor Yellow
+$FrontendReady = $false
+for ($i = 0; $i -lt 40; $i++) {
+    if ($FrontendProcess.HasExited) {
+        Write-Error "前端 Vite 进程异常退出 (ExitCode=$($FrontendProcess.ExitCode))"
+        if (-not $BackendProcess.HasExited) { Stop-Process -Id $BackendProcess.Id -Force }
+        exit 1
+    }
+    $Conn = Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue
+    if ($Conn) { $FrontendReady = $true; break }
+    Start-Sleep -Seconds 1
+}
+if (-not $FrontendReady) {
+    Write-Warning "前端 Vite 在 40 秒内未监听 5173 端口，请稍后手动访问 http://localhost:5173"
+} else {
+    Write-Host ">>> 前端 Vite 已就绪 (5173 监听中)" -ForegroundColor Green
+}
 
 # -------------------------------------------------
-# 6️⃣ 完成提示
+# 6️⃣ 完成提示 + 前台等待 Ctrl+C
 # -------------------------------------------------
 Write-Host "`n========== 启动完成 ==========" -ForegroundColor Green
 Write-Host "前端页面: http://localhost:5173" -ForegroundColor Cyan
 Write-Host "后端文档: http://localhost:8900/docs" -ForegroundColor Cyan
-Write-Host "`n后台任务 ID:"
-Write-Host "  MySQL 容器: $ContainerName (docker logs $ContainerName 查看日志)"
-Write-Host "  后端 uvicorn: Job $($BackendJob.Id) (Receive-Job -Id $($BackendJob.Id) 查看日志)"
-Write-Host "  前端 Vite:   Job $($FrontendJob.Id) (Receive-Job -Id $($FrontendJob.Id) 查看日志)"
-Write-Host "`n直接在浏览器打开上面两个地址即可使用。按 Ctrl+C 退出脚本不会关闭后台服务。"
+Write-Host "MySQL 容器: $ContainerName (docker logs $ContainerName 查看日志)"
+Write-Host "`n按 Ctrl+C 退出脚本将同时停止后端与前端进程 (MySQL 容器保留运行)`n" -ForegroundColor Cyan
+
+# 注册清理钩子:脚本退出时(含 Ctrl+C)杀掉两个子进程
+$null = Register-EngineEvent PowerShell.Exiting -Action {
+    if ($script:BackendProcess -and -not $script:BackendProcess.HasExited) {
+        Stop-Process -Id $script:BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    if ($script:FrontendProcess -and -not $script:FrontendProcess.HasExited) {
+        Stop-Process -Id $script:FrontendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# 前台等待任一子进程退出;Ctrl+C 会触发上面的清理钩子
+try {
+    while (-not $BackendProcess.HasExited -and -not $FrontendProcess.HasExited) {
+        Start-Sleep -Seconds 1
+    }
+} finally {
+    if ($script:BackendProcess -and -not $script:BackendProcess.HasExited) {
+        Stop-Process -Id $script:BackendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    if ($script:FrontendProcess -and -not $script:FrontendProcess.HasExited) {
+        Stop-Process -Id $script:FrontendProcess.Id -Force -ErrorAction SilentlyContinue
+    }
+    Write-Host "`n>>> 子进程已清理，脚本退出。MySQL 容器仍保留运行。" -ForegroundColor Yellow
+}

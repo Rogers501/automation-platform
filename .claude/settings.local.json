@@ -16,7 +16,12 @@
       "Bash(.venv/Scripts/python.exe -m pip install python-docx -q)",
       "Bash(.venv/Scripts/python.exe -c ' *)",
       "Bash(.venv/Scripts/python.exe -X utf8 append_trace_63.py)",
-      "Bash(.venv/Scripts/python.exe -X utf8 -c ' *)"
+      "Bash(.venv/Scripts/python.exe -X utf8 -c ' *)",
+      "Bash(curl -sS -m 3 http://127.0.0.1:8900/api/health)",
+      "Bash(curl -sS -m 3 http://localhost:5173)",
+      "Bash(netstat -ano)",
+      "Bash(curl -sS -m 3 -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:5173)",
+      "Bash(where npm *)"
     ]
   }
 }
