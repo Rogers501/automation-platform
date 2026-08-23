@@ -35,7 +35,11 @@
       "Read(//c/Users/Evan.wang1/AppData/Roaming/Docker/**)",
       "Bash(docker tag *)",
       "Bash(docker exec *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(cd /tmp)",
+      "Bash(rm -rf gitlab-test git clone \"http://team:AutoDev2026%21Xq@10.66.67.26:8929/root/automation-platform.git\" gitlab-test)",
+      "Bash(mkdir -p \"C:/docker-data/git-server/images\")",
+      "Bash(docker save *)"
     ]
   }
 }
