@@ -1,0 +1,29 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: unless-stopped
+    hostname: 10.66.67.26
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://10.66.67.26:8929'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+
+        # 关闭注册，同事账号由管理员创建
+        gitlab_rails['gitlab_signup_enabled'] = false
+
+        # 降低内存占用（部门内部用，无需重度监控）
+        prometheus_monitoring_enable = false
+        sidekiq['max_concurrency'] = 5
+        puma['worker_processes'] = 2
+
+        # 备份保留 7 天
+        gitlab_rails['backup_keep_time'] = 604800
+    ports:
+      - "8929:8929"   # HTTP
+      - "2224:22"     # SSH
+    volumes:
+      - C:/docker-data/git-server/config:/etc/gitlab
+      - C:/docker-data/git-server/data:/var/opt/gitlab
+      - C:/docker-data/git-server/logs:/var/log/gitlab
+    shm_size: '256m'

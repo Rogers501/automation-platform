@@ -21,7 +21,21 @@
       "Bash(curl -sS -m 3 http://localhost:5173)",
       "Bash(netstat -ano)",
       "Bash(curl -sS -m 3 -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:5173)",
-      "Bash(where npm *)"
+      "Bash(where npm *)",
+      "Bash(docker --version)",
+      "Bash(ipconfig)",
+      "Bash(mkdir -p \"C:/docker-data/git-server/config\" \"C:/docker-data/git-server/data\" \"C:/docker-data/git-server/logs\")",
+      "Read(//c/docker-data/**)",
+      "Bash(docker compose *)",
+      "Bash(docker pull *)",
+      "Bash(timeout 20 curl -sI https://__TRACKED_VAR__/v2/ --connect-timeout 10)",
+      "Bash(docker image *)",
+      "Bash(docker system *)",
+      "Bash(docker info *)",
+      "Read(//c/Users/Evan.wang1/AppData/Roaming/Docker/**)",
+      "Bash(docker tag *)",
+      "Bash(docker exec *)",
+      "Bash(curl *)"
     ]
   }
 }
