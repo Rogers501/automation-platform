@@ -39,7 +39,16 @@
       "Bash(cd /tmp)",
       "Bash(rm -rf gitlab-test git clone \"http://team:AutoDev2026%21Xq@10.66.67.26:8929/root/automation-platform.git\" gitlab-test)",
       "Bash(mkdir -p \"C:/docker-data/git-server/images\")",
-      "Bash(docker save *)"
+      "Bash(docker save *)",
+      "Bash(.venv/Scripts/python.exe -c \"import docx; print\\('python-docx OK, version:', docx.__version__ if hasattr\\(docx, '__version__'\\) else 'installed'\\)\")",
+      "Bash(.venv/Scripts/python.exe scripts/generate_share_doc.py)",
+      "Read(//c/work/PythonProject/automation-platform/**)",
+      "Bash(git fetch *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(.venv/Scripts/python.exe *)",
+      "Bash(rm \"C:/Users/Evan.wang1/.claude/projects/C--work-PythonProject-automation-platform/memory/feedback_session_persistence.md\")"
     ]
   }
 }
