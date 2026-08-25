@@ -9,6 +9,7 @@
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +19,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from .db import dispose_db, init_db, session_factory, sync_projects
 from .routers import cases, executions, projects, reports
 from .services.scanner import scan_projects
+
+
+def _cors_origins() -> list[str]:
+    """Read allowed CORS origins from env, fall back to local dev defaults."""
+    env = os.getenv("APP_CORS_ORIGINS", "").strip()
+    if env:
+        return [o.strip() for o in env.split(",") if o.strip()]
+    return ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 
 @asynccontextmanager
@@ -43,7 +52,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

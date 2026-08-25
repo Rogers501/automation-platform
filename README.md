@@ -215,7 +215,20 @@ powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1
 
 脚本内部自动加载/导出 MySQL 离线镜像、启动容器并等待健康检查、启动后端并轮询 `/api/health`、启动前端 Vite。脚本头部强制 `chcp 65001` + UTF-8 输出，避免中文乱码。
 
-访问 http://localhost:5173，接口文档 http://localhost:8900/docs。
+访问 http://localhost:5173（开发模式），接口文档 http://localhost:8900/docs。
+
+### 容器化部署（生产模式，给同事访问）
+
+本地开发用上面的 `start_all.ps1`；给同事访问用容器化部署（nginx 托管 + 后端容器化）：
+
+```bash
+cd docker
+docker compose build backend frontend
+docker compose up -d mysql backend frontend
+```
+
+访问 http://10.66.67.26:8080（同事浏览器打开即用，无需装环境）。
+首次部署需放行 Windows 防火墙 8080 端口，详见 `docs/部署与运维.md` §3.5。
 
 ### MySQL 数据持久化
 

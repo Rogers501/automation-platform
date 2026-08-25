@@ -48,7 +48,11 @@
       "Bash(git remote *)",
       "Bash(git branch *)",
       "Bash(.venv/Scripts/python.exe *)",
-      "Bash(rm \"C:/Users/Evan.wang1/.claude/projects/C--work-PythonProject-automation-platform/memory/feedback_session_persistence.md\")"
+      "Bash(rm \"C:/Users/Evan.wang1/.claude/projects/C--work-PythonProject-automation-platform/memory/feedback_session_persistence.md\")",
+      "Bash(chmod +x .git/hooks/post-push)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(chmod +x scripts/sync_from_gitlab.sh)"
     ]
   }
 }

@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import os
+import sys
 import uuid
 from datetime import datetime
 from typing import Any
@@ -21,8 +22,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..db import save_execution, session_factory
 from .scanner import ROOT
 
-#: Python 解释器路径 (项目 venv).
-PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+#: Python 解释器路径. 容器内用 sys.executable, 本地 Windows 用 .venv.
+_VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+PYTHON = str(_VENV_PYTHON) if _VENV_PYTHON.exists() else sys.executable
 
 #: 运行中的任务 (execution_id -> 任务信息).
 _running: dict[str, dict[str, Any]] = {}

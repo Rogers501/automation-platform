@@ -53,6 +53,46 @@ services:
       timeout: 10s
       retries: 10
 
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: automation-platform-backend:latest
+    restart: unless-stopped
+    environment:
+      APP_DATABASE_URL: mysql+aiomysql://tester:testerpw@mysql:3306/automation
+      APP_CORS_ORIGINS: "http://10.66.67.26:8080,http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173"
+      APP_ENV: production
+    ports:
+      - "8900:8900"
+    volumes:
+      # 同事推到 gitlab 的代码会先 pull 到本地, 后端容器要能看到才能跑测试
+      - ../projects:/app/projects:ro
+      # 测试报告输出
+      - ../allure-report:/app/allure-report
+      - ../data:/app/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8900/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    image: automation-platform-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
 volumes:
   redis_data:
   kafka_data:

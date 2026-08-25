@@ -227,13 +227,13 @@ def build_toc(doc: Document) -> None:
         "   5.2  跑起来",
         "   5.3  看 Allure 报告",
         "第六部分  代码管理与协同",
-        "   6.1  三套 Git 远程: 个人 / 本地 GitLab",
+        "   6.1  三套 Git 远程 + 双分支策略",
         "   6.2  分支与提交规范",
         "   6.3  Pre-commit 自动检查",
         "   6.4  CI/CD 流水线",
         "第七部分  部署与运维",
         "   7.1  本地依赖(MySQL/Redis/Kafka)",
-        "   7.2  测试管理平台一键启动",
+        "   7.2  测试管理平台部署",
         "   7.3  本地 GitLab 容器",
         "   7.4  数据备份与镜像管理",
         "第八部分  同事参与指南",
@@ -720,7 +720,7 @@ cd projects/template
 def build_part6(doc: Document) -> None:
     add_heading(doc, "第六部分  代码管理与协同", level=1)
 
-    add_heading(doc, "6.1  三套 Git 远程: 个人 / 本地 GitLab", level=2)
+    add_heading(doc, "6.1  三套 Git 远程 + 双分支策略", level=2)
     add_para(doc,
         "我把代码同时维护在三个地方, 各有不同用途, 完全隔离互不污染:",
         indent=0.7)
@@ -736,20 +736,45 @@ def build_part6(doc: Document) -> None:
         ],
         col_widths=[2.5, 5.5, 4.0, 3.0])
 
-    add_para(doc, "本地 Git 配置:", bold=True, indent=0.7)
+    add_para(doc, "双分支隔离策略(个人仓库干净, 部门仓库容忍脏提交):", bold=True, indent=0.7)
+    add_table(doc,
+        headers=["分支", "推送目标", "用途"],
+        rows=[
+            ["main", "origin (gitee + github)", "个人干净分支, 自己维护, 只含已 review 的代码"],
+            ["master", "gitlab (本地 GitLab)", "部门协同分支, 同事可随便推, 容忍脏提交"],
+        ],
+        col_widths=[2.0, 5.0, 8.0])
+
+    add_para(doc, "本地 Git 配置与日常操作:", bold=True, indent=0.7)
     add_code_block(doc, """# 看当前所有远程
 git remote -v
 # origin   → gitee + github (个人仓库, 多 push URL)
 # gitlab   → 本地 GitLab (部门协同)
 
-# 推到个人仓库
+# 自己开发: 在 main 上 push (自动同步给部门 master, 见下文 post-push hook)
 git push origin main
 
-# 推到部门本地 GitLab
-git push gitlab main
+# 同事开发: 在 master 上 push
+git push gitlab master
 
 # 两条路径完全独立, 推 gitlab 不会污染 gitee/github
 """)
+
+    add_para(doc, "自动同步: post-push hook(正向 main→master):", bold=True, indent=0.7)
+    add_para(doc,
+        "项目根 .git/hooks/post-push 在推 origin/main 成功后自动执行: "
+        "checkout master → ff-only merge main → push gitlab master → checkout main. "
+        "自己 push main 时, 部门 master 自动同步, 无需手动操作.", indent=0.7)
+
+    add_para(doc, "反向同步(同事 master → 三平台 main, 手动):", bold=True, indent=0.7)
+    add_code_block(doc, """# 同事推 master 后, 你 review 并合回 main
+bash scripts/sync_from_gitlab.sh
+# 流程: fetch gitlab → 显示差异 → 询问确认 → merge gitlab/master → push origin main
+""")
+    add_callout(doc,
+        "正向自动(自己代码信任)、反向手动(同事代码需 review). "
+        "这是'个人仓库干净'与'部门协同推进'两个目标的平衡点.",
+        label="设计取舍")
 
     add_heading(doc, "6.2  分支与提交规范", level=2)
     add_para(doc, "分支策略(轻量级, 适合小团队):", bold=True, indent=0.7)
@@ -835,11 +860,12 @@ docker compose -f docker/docker-compose.yml ps
         "MySQL 数据持久化到项目本地 data/mysql/, Docker Desktop 升级或容器重建都不会丢数据.",
         indent=0.7)
 
-    add_heading(doc, "7.2  测试管理平台一键启动", level=2)
+    add_heading(doc, "7.2  测试管理平台部署", level=2)
     add_para(doc,
-        "测试管理平台(FastAPI 后端 + Vue 前端)封装了一键启动脚本:",
-        indent=0.7)
-    add_code_block(doc, """# 一键启动(MySQL 容器 + 后端 + 前端)
+        "测试管理平台(FastAPI 后端 + Vue 前端)有两种部署模式, 按场景选:", indent=0.7)
+
+    add_para(doc, "(1) 开发模式(本地调试, 热更新):", bold=True, indent=0.7)
+    add_code_block(doc, """# 一键启动(MySQL 容器 + 后端进程 + 前端 vite dev)
 powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1
 
 # 脚本自动完成:
@@ -852,8 +878,30 @@ powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1
 # 访问入口:
 # 前端工作台: http://localhost:5173
 # 后端 API 文档: http://localhost:8900/docs
-# 健康检查: http://localhost:8900/api/health
 """)
+
+    add_para(doc, "(2) 生产模式(容器化, 给同事访问, 推荐):", bold=True, indent=0.7)
+    add_para(doc,
+        "前端用 nginx 托管 dist 静态文件 + 反代 /api /ws, 后端容器化跑 uvicorn. "
+        "同事浏览器打开 http://10.66.67.26:8080 即可, 无需装环境.", indent=0.7)
+    add_code_block(doc, """# 构建后端与前端镜像
+cd docker
+docker compose build backend frontend
+
+# 启动三个容器(mysql + backend + frontend)
+docker compose up -d mysql backend frontend
+
+# 同事访问:
+# 前端工作台: http://10.66.67.26:8080
+# 后端 API 文档: http://10.66.67.26:8080/docs (经 nginx 反代)
+# 健康检查: http://10.66.67.26:8080/api/health
+""")
+    add_callout(doc,
+        "首次部署需在管理员 PowerShell 放行 8080 端口防火墙, 同事才能真正访问: "
+        "New-NetFirewallRule -DisplayName 'Automation Platform Frontend' "
+        "-Direction Inbound -Protocol TCP -LocalPort 8080 -Action Allow. "
+        "详见 docs/部署与运维.md §3.5.",
+        label="防火墙")
 
     add_heading(doc, "7.3  本地 GitLab 容器", level=2)
     add_para(doc,
@@ -897,6 +945,30 @@ powershell -ExecutionPolicy Bypass -File scripts/save_mysql_image.ps1
 # 恢复
 docker load -i data\\docker-images\\mysql-8.4.tar
 """)
+
+    add_para(doc, "测试管理平台镜像备份(backend/frontend + 基础镜像 python/node/nginx):",
+             bold=True, indent=0.7)
+    add_code_block(doc, """# 一键备份 5 个镜像
+powershell -ExecutionPolicy Bypass -File scripts/save_platform_images.ps1
+# 产物: data/docker-images/automation-platform-backend_latest.tar (375MB)
+#       data/docker-images/automation-platform-frontend_latest.tar (26MB)
+#       data/docker-images/python_3.12-slim.tar (43MB)
+#       data/docker-images/node_20-alpine.tar (46MB)
+#       data/docker-images/nginx_alpine.tar (26MB)
+
+# 恢复(Docker 重装或换机器后)
+docker load -i data\\docker-images\\automation-platform-backend_latest.tar
+docker load -i data\\docker-images\\automation-platform-frontend_latest.tar
+docker load -i data\\docker-images\\python_3.12-slim.tar
+docker load -i data\\docker-images\\node_20-alpine.tar
+docker load -i data\\docker-images\\nginx_alpine.tar
+# 然后直接 docker compose up -d, 不用重新拉/重新 build
+""")
+    add_callout(doc,
+        "国内拉 docker.io 经常断流, 我用 docker.1ms.run / dockerproxy.net 镜像源前缀拉再 retag, "
+        "然后 docker save 导出 tar 备份. 下次重装 Docker 或换机器, docker load 即可恢复, "
+        "不用重新拉镜像浪费时间流量.",
+        label="镜像管理")
 
     add_para(doc, "建议备份策略:", bold=True, indent=0.7)
     add_table(doc,
@@ -1207,15 +1279,22 @@ docker ps --filter "name=gitlab"                       # 看 GitLab 状态
 """)
 
     add_heading(doc, "测试管理平台", level=2)
-    add_code_block(doc, """# 一键启动
+    add_code_block(doc, """# 开发模式(本地进程, 热更新)
 powershell -ExecutionPolicy Bypass -File scripts/start_all.ps1
 
 # 分进程启动
 powershell -ExecutionPolicy Bypass -File scripts/start_backend.ps1
 powershell -ExecutionPolicy Bypass -File scripts/start_frontend.ps1
 
+# 生产模式(容器化, 给同事访问)
+cd docker && docker compose build backend frontend   # 构建镜像
+docker compose up -d mysql backend frontend           # 启动三个容器
+docker compose ps                                     # 看状态
+docker compose logs -f backend                        # 看后端日志
+
 # 健康检查
-curl http://localhost:8900/api/health
+curl http://localhost:8080/api/health                 # 生产模式
+curl http://localhost:8900/api/health                 # 开发模式
 """)
 
     add_heading(doc, "备份与镜像", level=2)
@@ -1227,17 +1306,25 @@ powershell -ExecutionPolicy Bypass -File scripts/restore_mysql.ps1 -BackupFile <
 powershell -ExecutionPolicy Bypass -File scripts/save_mysql_image.ps1
 docker load -i data\\docker-images\\mysql-8.4.tar
 
+# 测试管理平台镜像备份/导入(backend/frontend + 基础镜像)
+powershell -ExecutionPolicy Bypass -File scripts/save_platform_images.ps1
+docker load -i data\\docker-images\\automation-platform-backend_latest.tar
+docker load -i data\\docker-images\\automation-platform-frontend_latest.tar
+
 # GitLab 镜像导入
 docker load -i C:/docker-data/git-server/images/gitlab-ce-latest.tar
 """)
 
     add_heading(doc, "Git 操作", level=2)
     add_code_block(doc, """git remote -v                             # 看所有远程
-git push origin main                      # 推个人 gitee/github
-git push gitlab main                      # 推部门本地 GitLab
+git push origin main                      # 推个人 gitee/github (自动触发 post-push hook 同步 gitlab master)
+git push gitlab master                    # 手动推部门本地 GitLab master
 git pull gitlab main                      # 拉最新代码
 git checkout -b feature/xxx               # 创建新分支
 git add . && git commit -m "feat: xxx"    # 提交
+
+# 反向同步(同事推 master 后, 合并到三平台 main)
+bash scripts/sync_from_gitlab.sh
 """)
 
     add_heading(doc, "Allure 报告", level=2)

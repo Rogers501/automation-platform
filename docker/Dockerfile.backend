@@ -1,0 +1,47 @@
+# 测试管理平台后端 (FastAPI + uvicorn)
+# 容器内需要包含整个项目 (server + framework + projects), 因为后端会通过 subprocess 调 pytest 跑测试
+
+FROM python:3.12-slim
+
+# 安装系统依赖
+# - 换成阿里云 debian 源避免 deb.debian.org 国内连不上
+# - ca-certificates: HTTPS 证书
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources 2>/dev/null \
+    || sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list 2>/dev/null \
+    || true \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 uv
+ENV UV_LINK_MODE=copy \
+    UV_SYSTEM_PYTHON=1
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# 先复制依赖声明利用层缓存
+COPY server/requirements.txt /app/server/requirements.txt
+RUN uv pip install --system -r /app/server/requirements.txt
+
+# 复制项目代码 (framework + projects + server + scripts)
+COPY framework/ /app/framework/
+COPY projects/ /app/projects/
+COPY server/ /app/server/
+COPY scripts/ /app/scripts/
+COPY pyproject.toml uv.lock* /app/
+
+# 安装 framework 本地包 (projects 通过 framework 调用)
+RUN uv pip install --system -e /app/framework
+
+# 测试报告输出目录
+RUN mkdir -p /app/allure-report /app/data
+
+ENV APP_ENV=production \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8900
+
+# 后端启动
+CMD ["python", "-m", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8900"]

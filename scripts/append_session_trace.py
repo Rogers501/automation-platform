@@ -1,10 +1,8 @@
 """向 docs/协作留痕.docx 追加本次对话留痕.
 
-本次内容: 对话 64 · 2026-08-24 · 三远程分支策略调整
-- 修复 PyCharm 推送未同步本地 GitLab 问题
-- 撤销 origin 中的 gitlab push URL
-- 建 master 分支推 gitlab, main 留 origin
-- 更新 memory 与规则
+本次内容: 对话 68 · 2026-08-25 · 文档全面同步容器化与分支策略变更
+- README/技术方案/概要设计/详细设计/分享文档 全部同步
+- 分享文档重生成, 含双分支策略、容器化部署、镜像备份
 """
 
 from __future__ import annotations
@@ -27,7 +25,7 @@ def main() -> None:
         if m:
             last = max(last, int(m.group(1)))
     dialog_no = last + 1
-    date = "2026-08-24"
+    date = "2026-08-25"
 
     def add(text: str, bold: bool = False, color: tuple[int, int, int] | None = None,
             size: int = 11) -> None:
@@ -38,74 +36,81 @@ def main() -> None:
         if color is not None:
             run.font.color.rgb = RGBColor(*color)
 
-    add(f"【用户】 PyCharm 推送未同步到本地 GitLab · 对话 {dialog_no} · {date}",
+    add(f"【用户】 检查并同步所有相关文档 · 对话 {dialog_no} · {date}",
         bold=True, color=(0x1F, 0x49, 0x7D))
     add(
-        "用户反馈: 在 PyCharm 中提交代码时, 只推到了 origin (gitee + github), "
-        "没有推到刚部署的本地 GitLab (10.66.67.26:8929). "
-        "进一步诉求: 个人仓库保持干净, 避免同事提交污染; 部门仓库独立接收协同提交. "
-        "建议方案: 复制 main 拉一个 master, 同事都往 master 推, main 留个人."
+        "用户诉求: 容器化部署和分支策略变更后, 检查所有相关文档是否需要更新, "
+        "比如分享文档、方案文档. 同步更新, 不存在则创建."
     )
     add("文件变更表:")
-    add("  - scripts/generate_share_doc.py (新增, 60533 字节分享文档生成脚本)")
-    add("  - docs/自动化测试平台分享文档.docx (新增, 59.1KB)")
-    add("  - .claude/settings.local.json (新增 generate_share_doc 相关权限)")
-    add("验证结果表:")
-    add("  - git remote -v 确认: origin=gitee+github, gitlab=本地仓库")
-    add("  - git push gitlab main --force 成功 (main 解除保护后)")
-    add("  - master 分支建立并推到 gitlab/master, upstream 已设")
-    add("  - main 仍 track origin/main, master track gitlab/master")
-    add("影响范围分析表:")
-    add("  - 个人仓库 (gitee/github) main: 不受影响")
-    add("  - 部门仓库 (gitlab) master: 新分支, 与原 main 并存")
-    add("  - 同事须知: 推送改用 master 分支, main 不再协同使用")
-    add("  - GitLab Web UI 默认分支建议改成 master")
-
-    add(f"【助手】 分支策略调整执行 · 对话 {dialog_no} · {date}",
-        bold=True, color=(0x1F, 0x49, 0x7D))
-    add(
-        "诊断: PyCharm 默认推 origin, 而 origin 的 push URL 只含 gitee+github, "
-        "gitlab 是独立 remote 不会被自动推送. "
-        "第一步先解决历史分叉: gitlab/main 有两个本地没有的测试性 commit "
-        "(f5c5e9f add gitlab readme, 45a6706 revert), 本地比 gitlab 多 1 个 commit (3e383dd). "
-        "强推被拒因 main 受保护, 用户去 GitLab UI (root 账号) Settings → Repository → "
-        "Protected branches 解除 main 保护后, 执行 git push gitlab main --force 成功."
-    )
-    add(
-        "策略选择: 用户诉求是个人仓库干净、部门仓库独立接收协同. "
-        "对比三方案后选 A: main=个人(推 origin), master=部门(推 gitlab). "
-        "之前临时加进 origin.pushUrl 的 gitlab URL 撤销掉, 恢复 origin 只含 gitee+github. "
-        "新建 master 分支基于 main, git push -u gitlab master 建立 upstream."
-    )
-    add(
-        "最终配置: origin fetch=gitee, origin push=gitee+github; gitlab 独立远程. "
-        "本地分支: main tracks origin/main, master tracks gitlab/master. "
-        "日常用法: 自己在 main 上 push 自动推 gitee+github; 同事在 master 上 push 推 gitlab; "
-        "同步给同事: git checkout master && git merge main && git push; "
-        "review 同事代码合回 main: git checkout main && git fetch gitlab && git merge gitlab/master."
-    )
-    add(
-        "Memory 同步更新: reference_local_gitlab.md 修正过时的 'push gitlab main' 规则; "
-        "新建 project_branch_strategy.md 记录三远程双分支策略与日常命令; "
-        "新建 feedback_session_persistence.md 记录 '每次对话必须留痕并更新文档' 的长期规则; "
-        "MEMORY.md 索引同步追加. 用户明确要求: 以后每次对话都要留痕, 文档不存在则创建."
-    )
-    add("文件变更表:")
-    add("  - memory/MEMORY.md (索引追加两条)")
-    add("  - memory/reference_local_gitlab.md (修正 How to apply)")
-    add("  - memory/project_branch_strategy.md (新增)")
-    add("  - memory/feedback_session_persistence.md (新增)")
+    add("  - README.md (修改, 第 218 行加容器化部署小节, 访问入口加 8080)")
+    add("  - docs/测试管理平台技术方案.md (修改, §6.2 加容器化部署模式, 访问地址表区分开发/生产)")
+    add("  - docs/概要设计文档.md (修改, §6.3 部署形态拆成开发模式+生产模式)")
+    add("  - docs/详细设计文档.md (修改, §11.1 CORS/Python 解释器改成 env/自动检测, §11.2 加部署形态/访问入口行)")
+    add("  - docs/自动化测试平台分享文档.docx (重生成, 第六部分双分支策略, 第七部分容器化部署, 附录B命令速查)")
+    add("  - scripts/generate_share_doc.py (修改, 上述 docx 内容对应的生成脚本)")
     add("  - docs/协作留痕.docx (本条追加)")
     add("验证结果表:")
-    add("  - git remote -v: 确认 origin push 不含 gitlab, gitlab 独立")
-    add("  - git branch -vv: main→origin/main, master→gitlab/master")
-    add("  - git push gitlab main --force: 成功覆盖到 3e383dd")
-    add("  - 协作留痕.docx 追加成功, 段落总数较前增加")
+    add("  - generate_share_doc.py 跑通, 分享文档从 59.1KB 增到 60.8KB")
+    add("  - 各 markdown 文档 grep 验证 5173/8080/start_all/docker compose 引用一致")
+    add("  - 文档间交叉引用 (docs/部署与运维.md §3.5) 在 README/技术方案/概要设计中都正确指向")
     add("影响范围分析表:")
-    add("  - 个人仓库: 推送策略不变 (推 origin = gitee+github)")
-    add("  - 部门仓库: 新增 master 分支用于协同, main 仍是部门仓库的默认分支 (建议改 master)")
-    add("  - 跨会话: memory 已记录, 下次对话会自动加载分支策略与留痕规则")
-    add("  - 待办: 用户去 GitLab UI 把 main 保护重新加上; 默认分支改成 master")
+    add("  - 新人/同事读文档: 看到的访问入口/部署命令都是最新的, 不会按过时信息操作")
+    add("  - 分享文档: 部门内技术分享时, 第六/七部分内容与当前实际一致")
+    add("  - 设计文档: CORS env 化、Python 解释器自动检测的设计决策记录到详细设计")
+
+    add(f"【助手】 文档同步检查与更新 · 对话 {dialog_no} · {date}",
+        bold=True, color=(0x1F, 0x49, 0x7D))
+    add(
+        "盘点: 列出 11 个文档 (README + docs/ 下 9 个 + AGENTS/AI_RULES), "
+        "逐个判断是否受容器化部署或分支策略变更影响. "
+        "结论: README/技术方案/概要设计/详细设计/分享文档 5 个需更新; "
+        "架构设计/CI-CD/GitLab部署/快速上手 4 个已更新或不涉及; "
+        "AGENTS/AI_RULES 2 个不涉及具体部署, 不动."
+    )
+    add(
+        "更新策略: (1) markdown 直接改; (2) 分享文档 docx 改对应的 generate_share_doc.py 然后重生成. "
+        "不直接改 docx, 否则下次重生成会丢内容."
+    )
+    add(
+        "分享文档改动: "
+        "第六部分 6.1 从 '三套 Git 远程' 改成 '三套 Git 远程 + 双分支策略', "
+        "加 main/master 双分支表、post-push hook 自动同步说明、反向同步脚本; "
+        "第七部分 7.2 从 '一键启动' 改成 '部署', 拆开发模式+生产模式两种, 加防火墙提示; "
+        "§7.4 加平台镜像备份小节 (save_platform_images.ps1); "
+        "附录B 命令速查加容器化部署命令、平台镜像备份/导入、sync_from_gitlab.sh 反向同步. "
+        "目录同步更新."
+    )
+    add(
+        "详细设计改动: §11.1 配置项清单, '前端 CORS 来源' 从 '(代码硬编码)' 改成 'APP_CORS_ORIGINS env', "
+        "'Python 解释器' 从 'ROOT/.venv/Scripts/python.exe (Windows only)' 改成 '.venv 不存在则用 sys.executable', "
+        "§11.2 环境差异配置加 '部署形态' 和 '访问入口' 两行 (DEV 本地进程 5173, 其他容器化 8080)."
+    )
+    add(
+        "未改的文档及理由: "
+        "docs/架构设计.md - 只讲 framework 模块职责, 不涉及部署; "
+        "docs/CI-CD流水线.md - CI 流水线不涉及运行时容器化; "
+        "docs/GitLab本地部署.md - 上次已更新分支策略章节; "
+        "docs/快速上手.md - 新人上手流程, 容器化部署已在 README 和部署与运维.md 详细讲, 不重复; "
+        "AGENTS.md/AI_RULES.md - 执行规范和开发红线, 不涉及具体部署命令."
+    )
+    add("文件变更表:")
+    add("  - README.md (修改, 第 218-229 行加容器化部署小节)")
+    add("  - docs/测试管理平台技术方案.md (修改, §6.2 加容器化部署 + 访问地址表分模式)")
+    add("  - docs/概要设计文档.md (修改, §6.3 部署形态重写, 开发+生产两种模式)")
+    add("  - docs/详细设计文档.md (修改, §11.1 §11.2 配置项与差异表更新)")
+    add("  - scripts/generate_share_doc.py (修改, §6.1 §7.2 §7.4 附录B)")
+    add("  - docs/自动化测试平台分享文档.docx (重生成, 60.8KB)")
+    add("  - docs/协作留痕.docx (本条追加)")
+    add("验证结果表:")
+    add("  - .venv/Scripts/python.exe scripts/generate_share_doc.py 跑通无报错")
+    add("  - 分享文档大小 60.8KB (较 59.1KB 增加 1.7KB, 对应新增内容)")
+    add("  - grep 验证: README/技术方案/概要设计 的 5173/8080/start_all/docker compose 引用一致")
+    add("影响范围分析表:")
+    add("  - 同事读文档: 所有访问入口、部署命令与当前实际一致, 不会按过时信息操作")
+    add("  - 分享文档: 部门内技术分享时, 第六/七部分与实际部署一致")
+    add("  - 设计文档: CORS env 化、Python 自动检测、双分支策略的设计决策有据可查")
+    add("  - 下次重生成分享文档不会丢内容 (改的是脚本, 不是 docx)")
 
     doc.save(DOC)
     print(f"已追加对话 {dialog_no} 到 {DOC}")

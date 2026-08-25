@@ -43,7 +43,7 @@
 | 角色 | 用户名 | 密码 | 权限 |
 | --- | --- | --- | --- |
 | 管理员 | `root` | 见容器内 `/etc/gitlab/initial_root_password`, **首次登录后请改密** | 全部 |
-| 团队共享账号 | `team` | `AutoDev2026!Xq` | Maintainer (可 push 到 main) |
+| 团队共享账号 | `team` | `AutoDev2026!Xq` | Maintainer (可 push 到 main/master) |
 
 > 注册已关闭: 新同事账号由 root 在 Web UI (Admin Area → Users) 创建分发.
 
@@ -190,16 +190,35 @@ cat ~/.ssh/id_ed25519.pub   # Windows: type %USERPROFILE%\.ssh\id_ed25519.pub
 git clone ssh://git@10.66.67.26:2224/root/automation-platform.git
 ```
 
-### 5.3 日常推送
+### 5.3 分支策略与日常推送
+
+本仓库采用 **main / master 双分支策略** 隔离个人仓库与部门仓库:
+
+| 分支 | 推送目标 | 用途 | 维护方 |
+| --- | --- | --- | --- |
+| `main` | `origin` (gitee + github) | 个人干净分支，只包含已 review 的代码 | 项目所有者 |
+| `master` | `gitlab` (本地 GitLab) | 部门协同分支，同事可直接推 | 全员 |
+
+**正向同步（main → master）自动化**: 项目根 `.git/hooks/post-push` hook 会在推 `origin/main` 成功后自动执行 checkout master → ff-only merge main → push gitlab master → checkout main。即: 你在 main 上 push，gitlab master 自动同步。
+
+**反向同步（master → main）手动**: 同事推 master 后，你 review 并合回 main 用:
 
 ```bash
-git add .
-git commit -m "feat: ..."
-git push origin main       # 推到部门本地 GitLab
+bash scripts/sync_from_gitlab.sh
+# 流程: fetch gitlab → 显示差异 → 询问确认 → merge gitlab/master 到 main → push origin main
 ```
 
-> 注意: 本仓库的 remote 名是 `gitlab` 而非 `origin` (origin 指向个人 gitee/github).
-> 见根目录 `git remote -v`.
+**同事推送（在 master 上）**:
+
+```bash
+git checkout master
+git pull gitlab master
+# 写代码 + 提交
+git push gitlab master
+```
+
+> 注意: 本仓库的 remote 名是 `gitlab` 而非 `origin` (`origin` 指向个人 gitee/github).
+> 见根目录 `git remote -v`. 同事 clone 后可把 `gitlab` 改名 `origin` 方便操作.
 
 ### 5.4 防火墙 (管理员)
 
@@ -271,7 +290,8 @@ docker exec gitlab gitlab-ctl restart
 
 - 确认账号在项目成员里且角色 >= Developer
 - 推 main 分支需要 >= Maintainer (GitLab 默认保护 main)
-- 或 root 在 Project Settings → Repository → Protected Branches 调整
+- master 分支目前未保护，同事可直接推；如需保护，root 在 Project Settings → Repository → Protected Branches 调整
+- 强推 main (force push) 需先临时解除 main 的保护
 
 ### 7.4 SSH 推送失败
 
