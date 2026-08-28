@@ -751,7 +751,7 @@ git remote -v
 # origin   → gitee + github (个人仓库, 多 push URL)
 # gitlab   → 本地 GitLab (部门协同)
 
-# 自己开发: 在 main 上 push (自动同步给部门 master, 见下文 post-push hook)
+# 自己开发: 在 main 上 push (自动同步给部门 master, 见下文 pre-push hook)
 git push origin main
 
 # 同事开发: 在 master 上 push
@@ -760,11 +760,16 @@ git push gitlab master
 # 两条路径完全独立, 推 gitlab 不会污染 gitee/github
 """)
 
-    add_para(doc, "自动同步: post-push hook(正向 main→master):", bold=True, indent=0.7)
+    add_para(doc, "自动同步: pre-push hook(正向 main→master):", bold=True, indent=0.7)
     add_para(doc,
-        "项目根 .git/hooks/post-push 在推 origin/main 成功后自动执行: "
-        "checkout master → ff-only merge main → push gitlab master → checkout main. "
+        "项目根 .git/hooks/pre-push 在推 origin/main 之前自动执行 "
+        "git push gitlab <main-commit>:refs/heads/master (直接推指定 commit, 不切分支). "
+        "ff-only 语义: main 是 master 的祖先才推, 否则跳过并提示手动处理. "
         "自己 push main 时, 部门 master 自动同步, 无需手动操作.", indent=0.7)
+    add_callout(doc,
+        "git 客户端没有 post-push hook, 只有 pre-push (推送前触发). "
+        "之前误用 post-push 名字导致从没触发, 修正为 pre-push 后验证通过.",
+        label="踩坑")
 
     add_para(doc, "反向同步(同事 master → 三平台 main, 手动):", bold=True, indent=0.7)
     add_code_block(doc, """# 同事推 master 后, 你 review 并合回 main

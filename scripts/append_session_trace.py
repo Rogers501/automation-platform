@@ -1,8 +1,9 @@
 """向 docs/协作留痕.docx 追加本次对话留痕.
 
-本次内容: 对话 68 · 2026-08-25 · 文档全面同步容器化与分支策略变更
-- README/技术方案/概要设计/详细设计/分享文档 全部同步
-- 分享文档重生成, 含双分支策略、容器化部署、镜像备份
+本次内容: 对话 69 · 2026-08-26 · 修复 post-push hook 从未触发的问题
+- 根因: git 客户端没有 post-push hook, 只有 pre-push
+- 改名 + 重写逻辑: pre-push, 不切分支, 直接 push gitlab <commit>:master
+- 验证通过, hook 正确触发并同步 gitlab master
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ def main() -> None:
         if m:
             last = max(last, int(m.group(1)))
     dialog_no = last + 1
-    date = "2026-08-25"
+    date = "2026-08-26"
 
     def add(text: str, bold: bool = False, color: tuple[int, int, int] | None = None,
             size: int = 11) -> None:
@@ -36,81 +37,90 @@ def main() -> None:
         if color is not None:
             run.font.color.rgb = RGBColor(*color)
 
-    add(f"【用户】 检查并同步所有相关文档 · 对话 {dialog_no} · {date}",
+    add(f"【用户】 post-push hook 没生效 · 对话 {dialog_no} · {date}",
         bold=True, color=(0x1F, 0x49, 0x7D))
     add(
-        "用户诉求: 容器化部署和分支策略变更后, 检查所有相关文档是否需要更新, "
-        "比如分享文档、方案文档. 同步更新, 不存在则创建."
+        "用户反馈: 在 main 分支推送代码到个人平台, 然后切到本地仓库的 master 分支, "
+        "并没有新的代码提交记录. 即: 之前装的 post-push hook 从未触发."
     )
     add("文件变更表:")
-    add("  - README.md (修改, 第 218 行加容器化部署小节, 访问入口加 8080)")
-    add("  - docs/测试管理平台技术方案.md (修改, §6.2 加容器化部署模式, 访问地址表区分开发/生产)")
-    add("  - docs/概要设计文档.md (修改, §6.3 部署形态拆成开发模式+生产模式)")
-    add("  - docs/详细设计文档.md (修改, §11.1 CORS/Python 解释器改成 env/自动检测, §11.2 加部署形态/访问入口行)")
-    add("  - docs/自动化测试平台分享文档.docx (重生成, 第六部分双分支策略, 第七部分容器化部署, 附录B命令速查)")
-    add("  - scripts/generate_share_doc.py (修改, 上述 docx 内容对应的生成脚本)")
+    add("  - .git/hooks/post-push (重命名为 .git/hooks/pre-push, 重写逻辑)")
+    add("  - docs/GitLab本地部署.md (修改, 正向同步章节 post-push 改 pre-push)")
+    add("  - memory/project_branch_strategy.md (修改, 同上)")
+    add("  - scripts/generate_share_doc.py (修改, 分享文档 hook 描述更新)")
+    add("  - docs/自动化测试平台分享文档.docx (重生成, 61.0KB)")
     add("  - docs/协作留痕.docx (本条追加)")
     add("验证结果表:")
-    add("  - generate_share_doc.py 跑通, 分享文档从 59.1KB 增到 60.8KB")
-    add("  - 各 markdown 文档 grep 验证 5173/8080/start_all/docker compose 引用一致")
-    add("  - 文档间交叉引用 (docs/部署与运维.md §3.5) 在 README/技术方案/概要设计中都正确指向")
+    add("  - git ls-remote gitlab refs/heads/master: 与 origin/main 完全对齐")
+    add("  - 测试 push origin main: 终端输出 [pre-push] 检测到推 origin/main, 同步完成")
+    add("  - ff-only 检查正确: 强推回退时跳过同步并提示手动 sync_from_gitlab.sh")
     add("影响范围分析表:")
-    add("  - 新人/同事读文档: 看到的访问入口/部署命令都是最新的, 不会按过时信息操作")
-    add("  - 分享文档: 部门内技术分享时, 第六/七部分内容与当前实际一致")
-    add("  - 设计文档: CORS env 化、Python 解释器自动检测的设计决策记录到详细设计")
+    add("  - 以后推 origin/main 自动同步 gitlab master, 无需手动操作")
+    add("  - PyCharm 推送也会触发 (用本地 git CLI, hook 会被调用)")
+    add("  - 同事推 master 导致 ff-only 失败时, hook 不阻塞主 push, 只提示手动处理")
 
-    add(f"【助手】 文档同步检查与更新 · 对话 {dialog_no} · {date}",
+    add(f"【助手】 根因定位与 hook 重写 · 对话 {dialog_no} · {date}",
         bold=True, color=(0x1F, 0x49, 0x7D))
     add(
-        "盘点: 列出 11 个文档 (README + docs/ 下 9 个 + AGENTS/AI_RULES), "
-        "逐个判断是否受容器化部署或分支策略变更影响. "
-        "结论: README/技术方案/概要设计/详细设计/分享文档 5 个需更新; "
-        "架构设计/CI-CD/GitLab部署/快速上手 4 个已更新或不涉及; "
-        "AGENTS/AI_RULES 2 个不涉及具体部署, 不动."
+        "根因: git 客户端 hook 只有 pre-push (推送前), 没有 post-push (推送后). "
+        "之前对话 65 装的 .git/hooks/post-push 文件名 git 根本不认识, 从没被调用过. "
+        "之前 master 能同步到 a57b47c 是手动执行的 ff-only merge + push, 不是 hook 触发. "
+        "ls .git/hooks/*.sample 验证: 只有 pre-push.sample, 没有 post-push.sample."
     )
     add(
-        "更新策略: (1) markdown 直接改; (2) 分享文档 docx 改对应的 generate_share_doc.py 然后重生成. "
-        "不直接改 docx, 否则下次重生成会丢内容."
+        "修复方案: mv .git/hooks/post-push .git/hooks/pre-push, 重写逻辑. "
+        "pre-push 在 push 前触发, stdin 格式与 post-push 相同 "
+        "(<local-ref> <local-sha> <remote-ref> <remote-sha>). "
+        "关键约束: pre-push hook 不能 checkout 切分支 (会破坏 push 工作树状态), "
+        "改用 git push gitlab <local-sha>:refs/heads/master 直接推指定 commit, 不切分支. "
+        "ff-only 语义靠 git merge-base --is-ancestor 检查 main 是否是 master 的祖先."
     )
     add(
-        "分享文档改动: "
-        "第六部分 6.1 从 '三套 Git 远程' 改成 '三套 Git 远程 + 双分支策略', "
-        "加 main/master 双分支表、post-push hook 自动同步说明、反向同步脚本; "
-        "第七部分 7.2 从 '一键启动' 改成 '部署', 拆开发模式+生产模式两种, 加防火墙提示; "
-        "§7.4 加平台镜像备份小节 (save_platform_images.ps1); "
-        "附录B 命令速查加容器化部署命令、平台镜像备份/导入、sync_from_gitlab.sh 反向同步. "
-        "目录同步更新."
+        "测试验证: 造空 commit (test: 验证 pre-push hook 触发) push origin main, "
+        "终端输出完整同步流程: [pre-push] 检测到推 origin/main → "
+        "git push gitlab <commit>:master → 1f56c67..d22a7ec master → 同步完成. "
+        "然后主 push 继续推到 github 和 gitee. git ls-remote 验证 gitlab/master 已对齐."
     )
     add(
-        "详细设计改动: §11.1 配置项清单, '前端 CORS 来源' 从 '(代码硬编码)' 改成 'APP_CORS_ORIGINS env', "
-        "'Python 解释器' 从 'ROOT/.venv/Scripts/python.exe (Windows only)' 改成 '.venv 不存在则用 sys.executable', "
-        "§11.2 环境差异配置加 '部署形态' 和 '访问入口' 两行 (DEV 本地进程 5173, 其他容器化 8080)."
+        "ff-only 检查验证: 强推回退 main (a57b47c) 时, gitlab master 在 d22a7ec (测试 commit), "
+        "main 不是 master 的祖先, hook 跳过同步并提示 '运行 sync_from_gitlab.sh 手动处理'. "
+        "正确行为: 不阻塞主 push (个人仓库推送照常), 只提示手动处理部门仓库."
     )
     add(
-        "未改的文档及理由: "
-        "docs/架构设计.md - 只讲 framework 模块职责, 不涉及部署; "
-        "docs/CI-CD流水线.md - CI 流水线不涉及运行时容器化; "
-        "docs/GitLab本地部署.md - 上次已更新分支策略章节; "
-        "docs/快速上手.md - 新人上手流程, 容器化部署已在 README 和部署与运维.md 详细讲, 不重复; "
-        "AGENTS.md/AI_RULES.md - 执行规范和开发红线, 不涉及具体部署命令."
+        "设计取舍: pre-push hook 失败不阻塞主 push (exit 0), 保证个人仓库推送不受部门仓库状态影响. "
+        "如果部门 master 有同事推过的新提交, hook 跳过同步, 用户手动跑 sync_from_gitlab.sh "
+        "(fetch + 显示差异 + 询问确认 + merge + push 三平台 main). "
+        "这是 '个人仓库优先' 与 '部门协同推进' 的平衡."
+    )
+    add(
+        "文档同步: docs/GitLab本地部署.md §5.3 正向同步章节 post-push 改 pre-push, "
+        "描述改为 'git push gitlab <main-commit>:refs/heads/master 直接推指定 commit 不切分支'; "
+        "memory/project_branch_strategy.md 同步更新, 加 '注意: git 客户端没有 post-push hook' 警示; "
+        "scripts/generate_share_doc.py 第六部分 hook 描述更新, 加踩坑提示; "
+        "重生成分享文档 61.0KB."
+    )
+    add(
+        "清理: 测试 commit (test: 验证 pre-push hook 触发 / post-push hook 触发) "
+        "已 git reset --hard 删除, 强推 origin/main 回 a57b47c, 强推 gitlab master 回 a57b47c. "
+        "本地 master 也 reset 到 a57b47c. 最终所有分支对齐 a57b47c 自动化管理平台docker部署."
     )
     add("文件变更表:")
-    add("  - README.md (修改, 第 218-229 行加容器化部署小节)")
-    add("  - docs/测试管理平台技术方案.md (修改, §6.2 加容器化部署 + 访问地址表分模式)")
-    add("  - docs/概要设计文档.md (修改, §6.3 部署形态重写, 开发+生产两种模式)")
-    add("  - docs/详细设计文档.md (修改, §11.1 §11.2 配置项与差异表更新)")
-    add("  - scripts/generate_share_doc.py (修改, §6.1 §7.2 §7.4 附录B)")
-    add("  - docs/自动化测试平台分享文档.docx (重生成, 60.8KB)")
+    add("  - .git/hooks/post-push → .git/hooks/pre-push (重命名 + 重写, 48 行)")
+    add("  - docs/GitLab本地部署.md (修改, §5.3 hook 描述更新)")
+    add("  - memory/project_branch_strategy.md (修改, hook 描述 + 警示)")
+    add("  - scripts/generate_share_doc.py (修改, 第六部分 hook 描述 + 踩坑提示)")
+    add("  - docs/自动化测试平台分享文档.docx (重生成, 61.0KB)")
     add("  - docs/协作留痕.docx (本条追加)")
     add("验证结果表:")
-    add("  - .venv/Scripts/python.exe scripts/generate_share_doc.py 跑通无报错")
-    add("  - 分享文档大小 60.8KB (较 59.1KB 增加 1.7KB, 对应新增内容)")
-    add("  - grep 验证: README/技术方案/概要设计 的 5173/8080/start_all/docker compose 引用一致")
+    add("  - git push origin main 时 hook 触发, 输出 [pre-push] 日志")
+    add("  - gitlab/master 与 origin/main 完全对齐 (a57b47c)")
+    add("  - ff-only 检查在强推回退时正确跳过同步")
+    add("  - 测试 commit 已清理, 所有分支对齐 a57b47c")
     add("影响范围分析表:")
-    add("  - 同事读文档: 所有访问入口、部署命令与当前实际一致, 不会按过时信息操作")
-    add("  - 分享文档: 部门内技术分享时, 第六/七部分与实际部署一致")
-    add("  - 设计文档: CORS env 化、Python 自动检测、双分支策略的设计决策有据可查")
-    add("  - 下次重生成分享文档不会丢内容 (改的是脚本, 不是 docx)")
+    add("  - 以后每次 push origin main, hook 自动同步 gitlab master (命令行 + PyCharm)")
+    add("  - 同事推 master 导致 ff 失败时, hook 不阻塞主 push, 提示手动 sync_from_gitlab.sh")
+    add("  - memory 更新警示: 下次别再犯 post-push 的错")
+    add("  - 文档/分享文档都同步更新, 不会误导后人")
 
     doc.save(DOC)
     print(f"已追加对话 {dialog_no} 到 {DOC}")

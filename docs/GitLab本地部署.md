@@ -199,7 +199,7 @@ git clone ssh://git@10.66.67.26:2224/root/automation-platform.git
 | `main` | `origin` (gitee + github) | 个人干净分支，只包含已 review 的代码 | 项目所有者 |
 | `master` | `gitlab` (本地 GitLab) | 部门协同分支，同事可直接推 | 全员 |
 
-**正向同步（main → master）自动化**: 项目根 `.git/hooks/post-push` hook 会在推 `origin/main` 成功后自动执行 checkout master → ff-only merge main → push gitlab master → checkout main。即: 你在 main 上 push，gitlab master 自动同步。
+**正向同步（main → master）自动化**: 项目根 `.git/hooks/pre-push` hook 会在推 `origin/main` 之前自动执行 `git push gitlab <main-commit>:refs/heads/master`（直接推指定 commit，不切分支）。即: 你在 main 上 push，gitlab master 自动同步。
 
 **反向同步（master → main）手动**: 同事推 master 后，你 review 并合回 main 用:
 
