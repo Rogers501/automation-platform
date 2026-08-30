@@ -45,7 +45,7 @@
 | 管理员 | `root` | 见容器内 `/etc/gitlab/initial_root_password`, **首次登录后请改密** | 全部 |
 | 团队共享账号 | `team` | `AutoDev2026!Xq` | Maintainer (可 push 到 main/master) |
 
-> 注册已关闭: 新同事账号由 root 在 Web UI (Admin Area → Users) 创建分发.
+> 注册已关闭: 新同事账号由 root 用 `scripts/create_gitlab_users.py` 批量 API 创建 (见 §6.5).
 
 ### 2.3 关键文件路径
 
@@ -266,6 +266,30 @@ docker exec -it gitlab gitlab-rake "gitlab:password:reset[root]"
 3. 填写 Name / Username / Email
 4. 创建后点击用户 → Edit → 设密码
 5. Projects → automation-platform → Members → 添加该用户 → 角色选 Maintainer
+
+### 6.5 批量创建同事账号 (API 脚本, 推荐)
+
+`scripts/create_gitlab_users.py` 用 root PAT 调 GitLab REST API 批量建号 + 分配项目角色, 避免在 Web UI 逐个点.
+
+```bash
+# 预演 (不实际创建)
+python scripts/create_gitlab_users.py --dry-run
+
+# 实际创建: 内置 USERS 列表 → POST /users → POST /projects/1/members
+python scripts/create_gitlab_users.py
+```
+
+| 配置项 | 值 | 说明 |
+| --- | --- | --- |
+| `GITLAB_URL` | `http://10.66.67.26:8929` | 环境变量可覆盖 |
+| `GITLAB_TOKEN` | root PAT | 环境变量可覆盖, 默认硬编码在脚本里 |
+| `PROJECT_PATH` | `root/automation-platform` | 加成员的目标项目 |
+| `DEFAULT_PASSWORD` | `AutoDev2026!Xq` | 初始密码, `reset_password=False` 不强制改密 |
+| `ACCESS_LEVEL` | 30 (Developer) | 10 Guest / 20 Reporter / 30 Developer / 40 Maintainer / 50 Owner |
+
+已通过此脚本创建 7 个同事账号 (id=6-12): xuhao / lishuaishuai / gaoqianqian / lichuanhao / xiaojuan / sunzhouqing / zhuyushuang, 均已分配 Developer 角色.
+
+> 如需加 Maintainer 权限或自建用户列表, 修改脚本中 `USERS` 和 `ACCESS_LEVEL` 后重跑 (409 已存在会自动跳过).
 
 ## 7. 故障排查
 
