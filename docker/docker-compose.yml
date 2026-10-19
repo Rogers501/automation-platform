@@ -61,7 +61,7 @@ services:
     restart: unless-stopped
     environment:
       APP_DATABASE_URL: mysql+aiomysql://tester:testerpw@mysql:3306/automation
-      APP_CORS_ORIGINS: "http://10.66.67.26:8080,http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173"
+      APP_CORS_ORIGINS: "http://${HOST_IP}:8080,http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173"
       APP_ENV: production
     ports:
       - "8900:8900"

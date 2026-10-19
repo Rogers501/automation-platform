@@ -3,10 +3,10 @@ services:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     restart: unless-stopped
-    hostname: 10.66.67.26
+    hostname: ${HOST_IP}
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://10.66.67.26:8929'
+        external_url 'http://${HOST_IP}:8929'
         gitlab_rails['gitlab_shell_ssh_port'] = 2224
 
         # 关闭注册，同事账号由管理员创建

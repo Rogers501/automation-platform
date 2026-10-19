@@ -52,7 +52,12 @@
       "Bash(chmod +x .git/hooks/post-push)",
       "Bash(git checkout *)",
       "Bash(git merge *)",
-      "Bash(chmod +x scripts/sync_from_gitlab.sh)"
+      "Bash(chmod +x scripts/sync_from_gitlab.sh)",
+      "Bash(sed -n '270,280p' docs/CI-CD流水线.md)",
+      "Bash(sed -n '323,330p' docs/概要设计文档.md)",
+      "Bash(sed -n '145,160p' docs/测试管理平台技术方案.md)",
+      "Bash(ssh -p 2224 -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 git@10.66.130.60)",
+      "Bash(cmdkey /list)"
     ]
   }
 }

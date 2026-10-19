@@ -227,7 +227,9 @@ docker compose build backend frontend
 docker compose up -d mysql backend frontend
 ```
 
-访问 http://10.66.67.26:8080（同事浏览器打开即用，无需装环境）。
+访问 `http://<HOST_IP>:8080`（同事浏览器打开即用，无需装环境）。`<HOST_IP>` 是本机内网 IP，
+统一配置在 `docker/.env`；公司网络 DHCP 会变 IP，变了只改 `.env` 一行再跑
+`scripts/restart_middleware.ps1` 一键重启全部中间件，详见 `docs/部署与运维.md` §3.6。
 首次部署需放行 Windows 防火墙 8080 端口，详见 `docs/部署与运维.md` §3.5。
 
 ### MySQL 数据持久化

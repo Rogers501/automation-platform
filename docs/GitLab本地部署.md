@@ -21,7 +21,7 @@
 ```
 本地开发机
 ├─ origin  → gitee.com / github.com (个人仓库, 不被部门协作污染)
-└─ gitlab  → 10.66.67.26:8929      (本地 GitLab, 部门协同)
+└─ gitlab  → <HOST_IP>:8929        (本地 GitLab, 部门协同)
 ```
 
 两条 remote 路径完全独立, 推送/拉取互不影响.
@@ -32,11 +32,13 @@
 
 | 类型 | 地址 |
 | --- | --- |
-| Web UI | http://10.66.67.26:8929 |
-| HTTP 克隆 | `http://10.66.67.26:8929/root/automation-platform.git` |
-| SSH 克隆 | `ssh://git@10.66.67.26:2224/root/automation-platform.git` |
+| Web UI | http://<HOST_IP>:8929 |
+| HTTP 克隆 | `http://<HOST_IP>:8929/root/automation-platform.git` |
+| SSH 克隆 | `ssh://git@<HOST_IP>:2224/root/automation-platform.git` |
 
-> IP `10.66.67.26` 是宿主机内网 IP, 同事通过此 IP 访问.
+> `<HOST_IP>` = 宿主机内网 IP, 同事通过此 IP 访问. 公司网络是 DHCP, IP 会变;
+> 当前值统一配置在项目 `docker/.env` 的 `HOST_IP`, 变更操作见
+> [`部署与运维.md`](部署与运维.md) §3.6 (改一行 + 跑 `scripts/restart_middleware.ps1`).
 
 ### 2.2 账号
 
@@ -70,10 +72,10 @@ services:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     restart: unless-stopped
-    hostname: 10.66.67.26
+    hostname: ${HOST_IP}          # 来自 docker/.env, 启动: --env-file docker/.env
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://10.66.67.26:8929'
+        external_url 'http://${HOST_IP}:8929'
         gitlab_rails['gitlab_shell_ssh_port'] = 2224
         gitlab_rails['gitlab_signup_enabled'] = false
         prometheus_monitoring_enable = false
@@ -94,7 +96,7 @@ services:
 
 | 配置项 | 值 | 说明 |
 | --- | --- | --- |
-| `external_url` | `http://10.66.67.26:8929` | GitLab 显示在 Web UI 的克隆地址前缀, 同事看到的就是这个 |
+| `external_url` | `http://${HOST_IP}:8929` | GitLab 显示在 Web UI 的克隆地址前缀, 同事看到的就是这个; 变量来自 `docker/.env` |
 | `gitlab_shell_ssh_port` | 2224 | SSH 克隆端口 (容器内 22, 宿主机 2224) |
 | `gitlab_signup_enabled` | false | 关闭自助注册, 账号由管理员分发 |
 | `prometheus_monitoring_enable` | false | 关闭监控, 减少内存占用 |
@@ -160,7 +162,7 @@ docker exec -t gitlab gitlab-backup restore BACKUP=<timestamp>
 ### 5.1 首次使用
 
 1. 向 root 申请 team 账号密码
-2. 浏览器访问 http://10.66.67.26:8929 登录
+2. 浏览器访问 http://<HOST_IP>:8929 登录 (IP 见项目 `docker/.env`)
 3. 在 User Settings → Password 修改初始密码
 
 ### 5.2 克隆仓库
@@ -168,7 +170,8 @@ docker exec -t gitlab gitlab-backup restore BACKUP=<timestamp>
 **HTTP (推荐, 无需 SSH key)**:
 
 ```bash
-git clone http://10.66.67.26:8929/root/automation-platform.git
+git clone http://<HOST_IP>:8929/root/automation-platform.git
+# <HOST_IP> 见项目 docker/.env 的 HOST_IP (IP 变了以此为准)
 # 第一次会提示输入账号密码: team / AutoDev2026!Xq
 # 可配置凭据缓存避免重复输入:
 git config --global credential.helper manager    # Windows
@@ -187,7 +190,7 @@ cat ~/.ssh/id_ed25519.pub   # Windows: type %USERPROFILE%\.ssh\id_ed25519.pub
 # 3. 在 GitLab Web UI: User Settings → SSH Keys → Add, 粘贴公钥
 
 # 4. 克隆
-git clone ssh://git@10.66.67.26:2224/root/automation-platform.git
+git clone ssh://git@<HOST_IP>:2224/root/automation-platform.git
 ```
 
 ### 5.3 分支策略与日常推送
@@ -281,7 +284,7 @@ python scripts/create_gitlab_users.py
 
 | 配置项 | 值 | 说明 |
 | --- | --- | --- |
-| `GITLAB_URL` | `http://10.66.67.26:8929` | 环境变量可覆盖 |
+| `GITLAB_URL` | `http://<HOST_IP>:8929` (脚本内置默认值, IP 变了用环境变量覆盖) | 环境变量可覆盖 |
 | `GITLAB_TOKEN` | root PAT | 环境变量可覆盖, 默认硬编码在脚本里 |
 | `PROJECT_PATH` | `root/automation-platform` | 加成员的目标项目 |
 | `DEFAULT_PASSWORD` | `AutoDev2026!Xq` | 初始密码, `reset_password=False` 不强制改密 |
@@ -320,8 +323,15 @@ docker exec gitlab gitlab-ctl restart
 ### 7.4 SSH 推送失败
 
 - 确认 SSH key 已添加到 GitLab 用户
-- 确认走 2224 端口: `ssh -T -p 2224 git@10.66.67.26` 应返回欢迎信息
+- 确认走 2224 端口: `ssh -T -p 2224 git@<HOST_IP>` 应返回欢迎信息
 - 检查宿主机防火墙 2224 端口是否放行
+
+### 7.5 HTTP 推送报 `Unencrypted HTTP is not recommended` (GCM)
+
+新版 Git Credential Manager 默认拒绝明文 HTTP 远端. 已在全局配置
+`credential.gcmAllowUnsafeRemotes=true` 放行 (IP 变更后由 `scripts/restart_middleware.ps1`
+自动设置). 凭据按"主机:端口"存储, IP 变更后脚本会自动把旧 IP 的存储凭据迁移到新 IP;
+若无旧凭据可迁, 首次 push 会弹窗输入一次账号密码, 之后照常缓存.
 
 ## 8. 后续演进
 

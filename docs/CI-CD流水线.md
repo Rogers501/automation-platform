@@ -273,7 +273,7 @@ sh scripts/ci/ci.sh lint
 
 ## 8. 本地 GitLab CI 配置
 
-如需在本地 GitLab (`http://10.66.67.26:8929`) 跑流水线:
+如需在本地 GitLab (`http://<HOST_IP>:8929`, IP 见 `docker/.env`) 跑流水线:
 
 1. 推送代码到本地 GitLab (`git push gitlab main`)
 2. 在 Web UI → 项目 → Settings → CI/CD:
